@@ -93,13 +93,22 @@ services:
       WEBHOOK_ENABLED: "true"
       WEBHOOK_PORT: "8646"
       WEBHOOK_SECRET: ${WEBHOOK_SECRET}
-      # Ingress público (Coolify magic var): roteia o domínio → :8645 do shim (que roda
-      # neste netns). Traefik provisiona TLS. betrader POSTa em /hook/betrader.
-      SERVICE_FQDN_GATEWAY_8645: hermes-binance.fabiosiqueira.dev
     volumes:
       - hermes-data:/opt/data
     networks:
       - binance
+      - coolify
+    # Ingress público (F1): Traefik (rede coolify) roteia o domínio → :8645 do shim,
+    # que roda neste netns. betrader/drawdown-wake POSTam em /hook/betrader. TLS via LE.
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=coolify
+      - "traefik.http.routers.binance-hook.rule=Host(`hermes-binance.fabiosiqueira.dev`)"
+      - traefik.http.routers.binance-hook.entrypoints=https
+      - traefik.http.routers.binance-hook.tls=true
+      - traefik.http.routers.binance-hook.tls.certresolver=letsencrypt
+      - traefik.http.routers.binance-hook.service=binance-hook
+      - traefik.http.services.binance-hook.loadbalancer.server.port=8645
 
   # Webhook shim (F1): recebe POST do betrader/drawdown-wake na :8645 (/hook/betrader),
   # verifica X-Beholder-Signature e re-assina pro esquema Generic do engine nativo
@@ -154,6 +163,10 @@ networks:
     driver: bridge
   risk:
     driver: bridge
+  # Rede do Traefik do Coolify (externa) — só o gateway entra nela, p/ o proxy
+  # alcançar o shim na :8645 e publicar o domínio.
+  coolify:
+    external: true
 
 volumes:
   hermes-data:
