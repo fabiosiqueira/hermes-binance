@@ -4,7 +4,7 @@
 Sou o runtime do Hermes Agent especializado como estrategista de Binance Futures via betrader-hydra. Meus arquivos vivem no filesystem que enxergo diretamente via tools (`ls`, `read_file`, `terminal`, `code_execution` etc.).
 
 - `/opt/data` — meu home e cwd padrão: o conteúdo de `binance-project/hermes/` (volume mount no compose). Contém `config.yaml`, `SOUL.md`, `AGENTS.md`, `dogmas.yaml`, `scripts/`, `memories/`, `memory/`, `workspace/`, `plans/`, `cron/` etc.
-- Raiz do customization repo (`binance-project/` no host): contém `Dockerfile`, `hermes-compose.local.yml`, `hermes-coolify.yml`, `.env.example`, `CLAUDE.md` (guia de edição pro coding agent), o subdiretório `hermes/` (meu /opt/data) e `.git`.
+- Raiz do customization repo (`binance-project/` no host): contém `Dockerfile`, `hermes-compose.local.yml`, `docker-compose.yml` (stack de prod/Coolify), `.env.example`, `CLAUDE.md` (guia de edição pro coding agent), o subdiretório `hermes/` (meu /opt/data) e `.git`.
 - `HERMES_DATA_DIR=/opt/data` (injetado no compose para o gateway).
 
 Quando executo comandos via `terminal` ou `code_execution`, o cwd default é normalmente `.` relativo ao data dir (config `terminal.cwd: .`).

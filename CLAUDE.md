@@ -7,7 +7,7 @@ Não é lido pelo HAWK em runtime — quem o agente lê é `AGENTS.md` (dentro d
 ## O que este repo é
 Overlay / customization layer para rodar um Hermes Agent especializado em **estratégia de Binance Futures via betrader-hydra**.
 
-- Raiz do git (`binance-project/`): `CLAUDE.md` (este guia), `Dockerfile` (herda engine + instala deps Python do estrategista: redis, pydantic, httpx, prometheus-client, pyyaml), `hermes-compose.local.yml` (serviços `risk-gateway`, `gateway`, `webhook-shim`, `dashboard`, `redis`, `risk-redis`; volume `./hermes:/opt/data`; portas não-colidentes), `hermes-coolify.yml`, `.env.example` (template; local usa `hermes/.env` completo para o risk-gateway e `hermes/.env.agent` — sem `BETRADER_TOKEN`/`BETRADER_BASE_URL` — para o agente).
+- Raiz do git (`binance-project/`): `CLAUDE.md` (este guia), `Dockerfile` (herda engine + instala deps Python do estrategista: redis, pydantic, httpx, prometheus-client, pyyaml), `hermes-compose.local.yml` (serviços `risk-gateway`, `gateway`, `webhook-shim`, `dashboard`, `redis`, `risk-redis`; volume `./hermes:/opt/data`; portas não-colidentes), `docker-compose.yml` (stack de prod/Coolify — nome padrão pro build pack Docker Compose), `.env.example` (template; local usa `hermes/.env` completo para o risk-gateway e `hermes/.env.agent` — sem `BETRADER_TOKEN`/`BETRADER_BASE_URL` — para o agente).
 - `hermes/`: o data dir real do agente (montado como `/opt/data` dentro do container). É aqui que vivem:
   - `SOUL.md` — persona e limites do HAWK (carregado a cada mensagem).
   - `AGENTS.md` — contexto operacional do agente (onde estão as coisas, redis via env, ciclo do estrategista, betrader REST, etc.).
@@ -31,7 +31,7 @@ O agente é **estrategista, não trader-no-loop**: lê Brief, propõe StrategyPr
 
 ## Guardrails específicos deste projeto
 - **Escopo:** nunca altere arquivos fora do solicitado. Mudança que exige tocar adicionais → sinalize, aguarde aprovação.
-- **Infra:** **nunca** modifique `Dockerfile`, `hermes-compose.local.yml`, `hermes-coolify.yml`, configs de rede/volumes ou qualquer coisa de infra sem aprovação explícita do Fábio.
+- **Infra:** **nunca** modifique `Dockerfile`, `hermes-compose.local.yml`, `docker-compose.yml` (stack de prod), configs de rede/volumes ou qualquer coisa de infra sem aprovação explícita do Fábio.
 - **betrader-hydra é READ-ONLY:** o repo `gitlab.com/fabiosiqueira/betrader-hydra-bot` não deve ser modificado. Qualquer integração com ele é via REST usando os endpoints documentados no spec.
 - **`scripts/` do estrategista são código de produção testado**, não uma pasta livre para o agente criar ferramentas arbitrárias. Edições em `scripts/` requerem a mesma disciplina que qualquer código de produção: testes, match de estilo, aprovação implícita pelo scope da task.
 - **`dogmas.yaml` e `risk_engine.py` são invioláveis pelo agente em runtime.** Nunca crie paths de bypass ou "override temporário" sem aprovação explícita.
