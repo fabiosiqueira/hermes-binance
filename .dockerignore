@@ -1,0 +1,61 @@
+# Build context = binance-project/. O target `vps` faz COPY hermes/ → /opt/data
+# (data dir baked). Aqui excluímos do contexto TUDO que é segredo ou churn de
+# runtime do data dir — espelha hermes/.gitignore. Garante que .env/creds/state
+# JAMAIS entrem na imagem (defesa em profundidade: já são gitignored, mas no build
+# LOCAL o working tree os contém). O target `local` não faz COPY (usa bind mount).
+.git/
+.gitignore
+README.md
+.DS_Store
+
+# --- segredos do data dir ---
+hermes/.env
+hermes/.env.*
+hermes/*.bak
+hermes/*.bak-*
+hermes/auth.json
+hermes/auth.lock
+hermes/channel_directory.json
+
+# --- bancos de estado (SQLite) ---
+hermes/*.db
+hermes/*.db-shm
+hermes/*.db-wal
+
+# --- locks / pids / estado efêmero do gateway ---
+hermes/*.lock
+hermes/*.pid
+hermes/gateway_state.json
+hermes/.restart_last_processed.json
+hermes/.skills_prompt_snapshot.json
+hermes/.bundled_manifest
+hermes/.curator_state
+
+# --- caches ---
+hermes/**/__pycache__/
+hermes/*_cache.json
+hermes/models_dev_cache.json
+hermes/context_length_cache.yaml
+hermes/image_cache/
+hermes/audio_cache/
+hermes/cache/
+hermes/.cache/
+hermes/.bun/
+hermes/.npm/
+
+# --- runtime ---
+hermes/sessions/
+hermes/logs/
+hermes/lsp/
+hermes/sandboxes/
+hermes/response_store.db
+
+# --- home dotfiles (HOME=/opt/data) ---
+hermes/.install_method
+hermes/.local/
+hermes/.bash_logout
+hermes/.bashrc
+hermes/.profile
+
+# --- runtime do estrategista ---
+hermes/workspace/

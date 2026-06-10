@@ -1,0 +1,14 @@
+# binance-project = repo hermes-binance (overlay + data dir `hermes/` num só repo).
+# O data dir `hermes/` é trackeado (não é sub-repo) — seu runtime/segredos são
+# filtrados pelo hermes/.gitignore aninhado.
+
+# Build / cache
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+node_modules/
+
+# macOS
+.DS_Store

@@ -1,0 +1,56 @@
+# .gitignore — /opt/data (data dir / HOME do Hermes na VPS)
+# Mantém fora do git o estado de runtime e segredos; versiona só
+# skills/, bible/, plugins/, memories/, docs/, config.yaml, SOUL.md, VERSION.
+
+# --- segredos ---
+.env
+# backups do .env e de configs contêm os MESMOS segredos — nunca versionar
+.env.*
+*.bak
+*.bak-*
+
+# --- estado gerado pelo sync de skills no boot ---
+.bundled_manifest
+.curator_state
+
+# --- bancos de estado (SQLite) ---
+*.db
+*.db-shm
+*.db-wal
+
+# --- locks / pids / estado efêmero do gateway ---
+*.lock
+*.pid
+gateway_state.json
+.restart_last_processed.json
+.skills_prompt_snapshot.json
+
+# --- auth e registry de canais (runtime) ---
+auth.json
+channel_directory.json
+
+# --- caches ---
+__pycache__/
+*.py[cod]
+context_length_cache.yaml
+*_cache.json
+image_cache/
+cache/
+.cache/
+.bun/
+.npm/
+
+# --- diretórios de runtime ---
+sessions/
+logs/
+lsp/
+
+# --- home dotfiles (HOME=/opt/data) ---
+.bash_logout
+.bashrc
+.profile
+.install_method
+.local/
+
+# --- runtime do estrategista ---
+workspace/

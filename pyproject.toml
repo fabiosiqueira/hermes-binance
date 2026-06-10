@@ -1,0 +1,22 @@
+[project]
+name = "binance-strategist"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2",
+    "httpx",
+    "prometheus-client",
+    "redis",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "respx",
+    "fakeredis",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["hermes/scripts"]

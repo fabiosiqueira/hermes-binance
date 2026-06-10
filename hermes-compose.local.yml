@@ -1,0 +1,63 @@
+# scaffold binance-project provando reuso do engine Hermes publicado
+# Portas: 8644 (gateway) / 6381 (redis) / 9468 (metrics) / 9121 (dashboard)
+#         Não colidem com defi-project  (8642/9119/9466/6379)
+#                          nem forex-project (8643/9120/9467/6380)
+#
+# Nota: o engine expõe o gateway internamente em :8644 (porta configurável).
+# Mapeamento same:same para simplificar debugging local.
+
+networks:
+  binance:
+    driver: bridge
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: local
+    # Sobe o gateway de mensageria (telegram) em foreground como CMD do container
+    # (Architecture B: main-wrapper exec `hermes gateway run`). Sem isso o engine
+    # cai no CLI interativo e encerra por falta de TTY.
+    command: ["gateway", "run"]
+    depends_on:
+      - redis
+    ports:
+      - "8644:8644"
+      - "9468:9468"
+    volumes:
+      - ./hermes:/opt/data
+    environment:
+      HERMES_DATA_DIR: /opt/data
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    env_file:
+      - hermes/.env
+    networks:
+      - binance
+
+  dashboard:
+    image: ghcr.io/fabiosiqueira/hermes-engine:latest
+    ports:
+      - "9121:9121"
+    command: ["dashboard", "--host", "0.0.0.0", "--no-open", "--insecure"]
+    networks:
+      - binance
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6381:6379"
+    volumes:
+      - binance-redis-data:/data
+    networks:
+      - binance
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  binance-redis-data:

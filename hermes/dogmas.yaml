@@ -1,0 +1,10 @@
+# Dogmas — constituição de risco do estrategista (preenchido pelo operador).
+# Guardrails invioláveis aplicados pelo risk_engine antes de qualquer execução.
+# mandatory_stop_loss não pode ser desligado por construção (Literal[True] no schema).
+max_leverage: 5
+max_position_pct_equity: 10
+max_daily_drawdown_pct: 3
+mandatory_stop_loss: true
+min_stop_distance_pct: 0.5
+allowed_symbols:
+  - BTCUSDT

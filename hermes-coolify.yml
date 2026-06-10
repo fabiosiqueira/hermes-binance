@@ -1,0 +1,67 @@
+# hermes-coolify.yml — stack binance na Contabo (Coolify-prod, amd64 nativo).
+#
+# Tudo INTERNO: nenhuma porta exposta pro host, sem Traefik. O operador interage
+# pelo Telegram (o gateway conecta OUT). O estrategista executa ordens via
+# betrader REST API (sem MCP intermediário de trading).
+#
+# Env vars: cadastradas no Coolify env tab (NÃO no .env, que é gitignored e não
+# está no repo). Lidas do hermes/.env local e injetadas via MCP no deploy:
+#   gateway:  MINIMAX_API_KEY, OPENROUTER_API_KEY,
+#             TELEGRAM_BOT_TOKEN, TELEGRAM_ALLOWED_USERS, TELEGRAM_HOME_CHANNEL,
+#             BETRADER_BASE_URL, BETRADER_TOKEN, BETRADER_USER,
+#             EXECUTION_MODE, EMERGENCY_STOP, INITIAL_EQUITY
+
+services:
+  # Hermes agent (binance). Data dir baked na imagem (target vps); volume semeia dele.
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: vps
+    command: ["gateway", "run"]
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      HERMES_DATA_DIR: /opt/data
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      # secrets (Coolify env tab)
+      MINIMAX_API_KEY: ${MINIMAX_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_ALLOWED_USERS: ${TELEGRAM_ALLOWED_USERS}
+      TELEGRAM_HOME_CHANNEL: ${TELEGRAM_HOME_CHANNEL}
+      BETRADER_BASE_URL: ${BETRADER_BASE_URL}
+      BETRADER_TOKEN: ${BETRADER_TOKEN}
+      BETRADER_USER: ${BETRADER_USER}
+      EXECUTION_MODE: ${EXECUTION_MODE}
+      EMERGENCY_STOP: ${EMERGENCY_STOP}
+      INITIAL_EQUITY: ${INITIAL_EQUITY}
+    volumes:
+      - hermes-data:/opt/data
+    networks:
+      - binance
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - binance-redis-data:/data
+    networks:
+      - binance
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+networks:
+  binance:
+    driver: bridge
+
+volumes:
+  hermes-data:
+  binance-redis-data:
