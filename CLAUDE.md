@@ -7,14 +7,14 @@ Não é lido pelo HAWK em runtime — quem o agente lê é `AGENTS.md` (dentro d
 ## O que este repo é
 Overlay / customization layer para rodar um Hermes Agent especializado em **estratégia de Binance Futures via betrader-hydra**.
 
-- Raiz do git (`binance-project/`): `CLAUDE.md` (este guia), `Dockerfile` (herda engine + instala deps Python do estrategista: redis, pydantic, httpx, prometheus-client, pyyaml), `hermes-compose.local.yml` (serviços `gateway`, `dashboard`, `redis`; volume `./hermes:/opt/data`; `REDIS_HOST=redis`; portas não-colidentes), `hermes-coolify.yml`, `.env.example` (template com `BETRADER_TOKEN`, `BETRADER_BASE_URL`, `EXECUTION_MODE`).
+- Raiz do git (`binance-project/`): `CLAUDE.md` (este guia), `Dockerfile` (herda engine + instala deps Python do estrategista: redis, pydantic, httpx, prometheus-client, pyyaml), `hermes-compose.local.yml` (serviços `risk-gateway`, `gateway`, `webhook-shim`, `dashboard`, `redis`, `risk-redis`; volume `./hermes:/opt/data`; portas não-colidentes), `hermes-coolify.yml`, `.env.example` (template; local usa `hermes/.env` completo para o risk-gateway e `hermes/.env.agent` — sem `BETRADER_TOKEN`/`BETRADER_BASE_URL` — para o agente).
 - `hermes/`: o data dir real do agente (montado como `/opt/data` dentro do container). É aqui que vivem:
   - `SOUL.md` — persona e limites do HAWK (carregado a cada mensagem).
   - `AGENTS.md` — contexto operacional do agente (onde estão as coisas, redis via env, ciclo do estrategista, betrader REST, etc.).
   - `config.yaml`, `dogmas.yaml`, `scripts/`, `memories/`, `memory/hermes_memory.db`, `workspace/`, `cron/` etc.
 - O engine/framework é consumido via imagem pública `ghcr.io/fabiosiqueira/hermes-engine:latest`.
 
-O agente é **estrategista, não trader-no-loop**: lê Brief, propõe StrategyProposal, o gate (`risk_engine.py`) valida e o betrader executa. O HAWK nunca chama a Binance diretamente.
+O agente é **estrategista, não trader-no-loop**: lê Brief, propõe StrategyProposal, e desde a F2 o enforcement vive no serviço **Risk Gateway** (`scripts/risk_gateway.py`, container separado que detém o `BETRADER_TOKEN`, compõe `risk_engine.py` e executa via betrader). O agente fala só HTTP com o gateway (`GATEWAY_URL`/`GATEWAY_TOKEN`) e usa estado em Redis privado (`risk-redis`, rede `risk`) inalcançável pelo agente. O HAWK nunca chama a Binance nem o betrader diretamente.
 
 ## Ler sempre antes de propor qualquer mudança
 1. `hermes/SOUL.md` — identidade, missão, princípios e **limites duros** do HAWK. Qualquer edição que conflite com os limites → pare e pergunte.
