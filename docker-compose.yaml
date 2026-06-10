@@ -1,4 +1,4 @@
-# docker-compose.yml — stack binance na Contabo (Coolify-prod, amd64 nativo).
+# docker-compose.yaml — stack binance na Contabo (Coolify-prod, amd64 nativo).
 # (nome padrão p/ o build pack Docker Compose do Coolify achar o arquivo no repo.)
 #
 # Tudo INTERNO por padrão: o operador interage pelo Telegram (o gateway conecta
