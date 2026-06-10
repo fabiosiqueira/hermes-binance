@@ -93,6 +93,9 @@ services:
       WEBHOOK_ENABLED: "true"
       WEBHOOK_PORT: "8646"
       WEBHOOK_SECRET: ${WEBHOOK_SECRET}
+      # Ingress público (Coolify magic var): roteia o domínio → :8645 do shim (que roda
+      # neste netns). Traefik provisiona TLS. betrader POSTa em /hook/betrader.
+      SERVICE_FQDN_GATEWAY_8645: hermes-binance.fabiosiqueira.dev
     volumes:
       - hermes-data:/opt/data
     networks:
