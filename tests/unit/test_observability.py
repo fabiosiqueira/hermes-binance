@@ -1,13 +1,18 @@
 # Unit tests do módulo de observabilidade e estado financeiro persistido.
 # Fronteira Redis mockada via fakeredis; nada mais é mockado.
 import datetime
+import hashlib
+import hmac
+import json
 import os
 
 import fakeredis
+import httpx
 import pytest
+import respx
 from prometheus_client import CollectorRegistry
 
-from observability import FinancialState, Observability
+from observability import FinancialState, Observability, maybe_trigger_drawdown_wake
 
 
 # ---------------------------------------------------------------------------
@@ -280,3 +285,118 @@ def test_record_cycle_incrementa_counter(registry: CollectorRegistry) -> None:
 
     samples = {s.name: s.value for s in registry.collect() for s in s.samples}
     assert samples["strategist_cycles_total"] == 2.0
+
+
+# ---------------------------------------------------------------------------
+# maybe_trigger_drawdown_wake
+# ---------------------------------------------------------------------------
+
+_WEBHOOK_URL = "https://shim.example.test/webhook"
+_WEBHOOK_SECRET = "testsecret"
+_MAX_DD_PCT = 5.0  # dogmas.max_daily_drawdown_pct = 5 %
+
+
+def _state_with_drawdown(drawdown_pct_target: float) -> FinancialState:
+    """Constrói FinancialState com drawdown_pct aproximadamente igual ao alvo."""
+    # peak=10000, equity = peak * (1 - drawdown_pct_target/100)
+    initial = 10000.0
+    loss = initial * drawdown_pct_target / 100.0
+    state = FinancialState(initial_equity=initial, peak_equity=initial)
+    state.cum_pnl = -loss
+    return state
+
+
+@respx.mock
+def test_drawdown_breach_dispara_post_com_assinatura(monkeypatch: pytest.MonkeyPatch) -> None:
+    """DD ≥ 80% do limite → POST disparado com X-Beholder-Signature válido; retorna True."""
+    monkeypatch.setenv("WEBHOOK_PUBLIC_URL", _WEBHOOK_URL)
+    monkeypatch.setenv("BETRADER_WEBHOOK_SECRET", _WEBHOOK_SECRET)
+
+    # drawdown_pct = 4.2 % → threshold = 0.8 * 5.0 = 4.0 % → breach
+    state = _state_with_drawdown(4.2)
+
+    route = respx.post(_WEBHOOK_URL).mock(return_value=httpx.Response(200))
+
+    result = maybe_trigger_drawdown_wake(state, _MAX_DD_PCT)
+
+    assert result is True
+    assert route.called
+
+    # Valida assinatura HMAC-SHA256
+    sent_request = route.calls[0].request
+    raw_body = sent_request.content
+    expected_sig = hmac.new(_WEBHOOK_SECRET.encode(), raw_body, hashlib.sha256).hexdigest()
+    sig_header = sent_request.headers["x-beholder-signature"]
+    assert sig_header == f"sha256={expected_sig}"
+
+    # Valida payload
+    payload = json.loads(raw_body)
+    assert payload["source"] == "drawdown_monitor"
+    assert payload["type"] == "drawdown.threshold"
+    assert payload["drawdown_pct"] == pytest.approx(state.drawdown_pct)
+    assert payload["limit_pct"] == pytest.approx(_MAX_DD_PCT)
+
+
+@respx.mock
+def test_drawdown_abaixo_threshold_nao_dispara_post(monkeypatch: pytest.MonkeyPatch) -> None:
+    """DD < 80% do limite → nenhum POST, retorna False."""
+    monkeypatch.setenv("WEBHOOK_PUBLIC_URL", _WEBHOOK_URL)
+    monkeypatch.setenv("BETRADER_WEBHOOK_SECRET", _WEBHOOK_SECRET)
+
+    # drawdown_pct = 3.9 % → threshold = 4.0 % → sem breach
+    state = _state_with_drawdown(3.9)
+
+    route = respx.post(_WEBHOOK_URL).mock(return_value=httpx.Response(200))
+
+    result = maybe_trigger_drawdown_wake(state, _MAX_DD_PCT)
+
+    assert result is False
+    assert not route.called
+
+
+def test_drawdown_env_ausente_nao_dispara(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Env WEBHOOK_PUBLIC_URL ou BETRADER_WEBHOOK_SECRET ausente → no-op, retorna False."""
+    monkeypatch.delenv("WEBHOOK_PUBLIC_URL", raising=False)
+    monkeypatch.delenv("BETRADER_WEBHOOK_SECRET", raising=False)
+
+    state = _state_with_drawdown(5.0)  # 100% do limite
+    result = maybe_trigger_drawdown_wake(state, _MAX_DD_PCT)
+    assert result is False
+
+
+@respx.mock
+def test_drawdown_falha_de_rede_chama_on_error_sem_propagar(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Falha de rede no POST → on_error chamado com 'drawdown_wake_error'; sem exceção; False."""
+    monkeypatch.setenv("WEBHOOK_PUBLIC_URL", _WEBHOOK_URL)
+    monkeypatch.setenv("BETRADER_WEBHOOK_SECRET", _WEBHOOK_SECRET)
+
+    state = _state_with_drawdown(4.5)  # breach
+
+    respx.post(_WEBHOOK_URL).mock(side_effect=httpx.ConnectError("timeout"))
+
+    errors: list[str] = []
+    result = maybe_trigger_drawdown_wake(state, _MAX_DD_PCT, on_error=errors.append)
+
+    assert result is False
+    assert errors == ["drawdown_wake_error"]
+
+
+@respx.mock
+def test_drawdown_resposta_nao_2xx_chama_on_error_e_retorna_false(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Shim/engine responde não-2xx → on_error chamado com 'drawdown_wake_error'; False."""
+    monkeypatch.setenv("WEBHOOK_PUBLIC_URL", _WEBHOOK_URL)
+    monkeypatch.setenv("BETRADER_WEBHOOK_SECRET", _WEBHOOK_SECRET)
+
+    state = _state_with_drawdown(4.5)  # breach
+
+    respx.post(_WEBHOOK_URL).mock(return_value=httpx.Response(500))
+
+    errors: list[str] = []
+    result = maybe_trigger_drawdown_wake(state, _MAX_DD_PCT, on_error=errors.append)
+
+    assert result is False
+    assert errors == ["drawdown_wake_error"]

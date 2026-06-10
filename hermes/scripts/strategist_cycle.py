@@ -29,7 +29,7 @@ from schemas import (
 )
 
 from betrader_client import BetraderClient, BetraderError
-from observability import FinancialState, Observability
+from observability import FinancialState, Observability, maybe_trigger_drawdown_wake
 from risk_engine import check_emergency_stop, validate
 
 # Workspace dos artefatos do ciclo (brief.json, proposal.json) — relativo ao cwd
@@ -136,6 +136,11 @@ def _cmd_execute(
         )
 
     state = FinancialState.load(redis_client)
+    maybe_trigger_drawdown_wake(
+        state,
+        dogmas.max_daily_drawdown_pct,
+        on_error=observability.record_error,
+    )
 
     # (d) gate determinístico.
     result = validate(proposal, dogmas, brief)

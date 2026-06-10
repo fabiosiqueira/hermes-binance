@@ -10,12 +10,15 @@
 # seria necessário um servidor WSGI completo só para isso. Porta única separada
 # é mais simples e mantém cada responsabilidade isolada.
 import datetime
+import hashlib
+import hmac
 import json
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
-from typing import Optional
+from typing import Callable, Optional
 
+import httpx
 from prometheus_client import (
     CollectorRegistry,
     Counter,
@@ -199,6 +202,64 @@ class FinancialState:
             drawdown_pct=self.drawdown_pct,
             equity_curve_ref=_KEY_FINANCIAL_STATE,
         )
+
+
+# ---------------------------------------------------------------------------
+# Drawdown wake trigger
+# ---------------------------------------------------------------------------
+
+_DRAWDOWN_THRESHOLD_RATIO = 0.8
+
+
+def maybe_trigger_drawdown_wake(
+    state: FinancialState,
+    max_daily_drawdown_pct: float,
+    *,
+    on_error: Optional[Callable[[str], None]] = None,
+) -> bool:
+    """Dispara POST ao shim do webhook se o drawdown cruzar 80% do limite dos dogmas.
+
+    Retorna True se o POST foi disparado com sucesso; False caso contrário (sem exceção).
+    Nunca loga BETRADER_WEBHOOK_SECRET.
+    """
+    webhook_url = os.environ.get("WEBHOOK_PUBLIC_URL")
+    webhook_secret = os.environ.get("BETRADER_WEBHOOK_SECRET")
+
+    if not webhook_url or not webhook_secret:
+        return False
+
+    threshold = _DRAWDOWN_THRESHOLD_RATIO * max_daily_drawdown_pct
+    if threshold <= 0 or state.drawdown_pct < threshold:
+        return False
+
+    body = json.dumps(
+        {
+            "source": "drawdown_monitor",
+            "type": "drawdown.threshold",
+            "drawdown_pct": state.drawdown_pct,
+            "limit_pct": max_daily_drawdown_pct,
+        }
+    ).encode()
+
+    sig = hmac.new(webhook_secret.encode(), body, hashlib.sha256).hexdigest()
+    headers = {
+        "Content-Type": "application/json",
+        "X-Beholder-Signature": f"sha256={sig}",
+    }
+
+    try:
+        response = httpx.post(webhook_url, content=body, headers=headers, timeout=10.0)
+    except httpx.HTTPError:
+        if on_error is not None:
+            on_error("drawdown_wake_error")
+        return False
+
+    if not (200 <= response.status_code < 300):
+        if on_error is not None:
+            on_error("drawdown_wake_error")
+        return False
+
+    return True
 
 
 # ---------------------------------------------------------------------------

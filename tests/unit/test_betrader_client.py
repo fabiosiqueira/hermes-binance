@@ -7,6 +7,8 @@
 # Caminho crítico coberto: place_entry_with_stop emite entrada → confirma stop →
 # rollback (close imediato) se o stop não confirmar; rollback que falha vira
 # estado inconsistente reportado, nunca engolido. Token jamais vaza em repr/str.
+import json
+
 import httpx
 import pytest
 import respx
@@ -577,6 +579,85 @@ def test_install_automations_retorna_ids() -> None:
         ids = client.install_automations(specs)
     assert ids == ["auto-1", "auto-2"]
     assert start_route.call_count == 2
+
+
+WEBHOOK_URL = "https://hermes.example.test/webhook/betrader"
+WEBHOOK_SECRET = "whsec_0123456789abcdef0123456789abcdef"
+
+
+def _set_webhook_env(monkeypatch) -> None:
+    monkeypatch.setenv("WEBHOOK_PUBLIC_URL", WEBHOOK_URL)
+    monkeypatch.setenv("BETRADER_WEBHOOK_SECRET", WEBHOOK_SECRET)
+
+
+def _webhook_spec() -> AutomationSpec:
+    return AutomationSpec(
+        name="exit-webhook",
+        condition="MEMORY['BTCUSDT:RSI_14'] > 70",
+        action={"type": "WEBHOOK", "method": "POST"},
+    )
+
+
+@respx.mock
+def test_install_automations_injeta_webhook_url_e_secret_do_env(monkeypatch) -> None:
+    # Action WEBHOOK recebe webhookUrl/webhookSecret do env no corpo POSTado; o dict
+    # original do spec NÃO é mutado (immutability).
+    _set_webhook_env(monkeypatch)
+    post_route = respx.post(f"{BASE_URL}/api/automations").mock(
+        return_value=httpx.Response(200, json={"id": "auto-1"})
+    )
+    respx.post(url__regex=rf"{BASE_URL}/api/automations/.+/start").mock(
+        return_value=httpx.Response(200, json={"id": "auto-1", "isActive": True})
+    )
+    spec = _webhook_spec()
+    original_action = dict(spec.action)
+    with _client() as client:
+        client.install_automations([spec])
+    posted = json.loads(post_route.calls.last.request.content)
+    action = posted["newAutomation"]["actions"][0]
+    assert action["webhookUrl"] == WEBHOOK_URL
+    assert action["webhookSecret"] == WEBHOOK_SECRET
+    assert action["type"] == "WEBHOOK"
+    # spec.action intacto: sem campos injetados.
+    assert spec.action == original_action
+    assert "webhookSecret" not in spec.action
+
+
+@respx.mock
+def test_install_automations_nao_webhook_passa_intacta(monkeypatch) -> None:
+    # Action de outro tipo passa inalterada (sem webhookUrl/webhookSecret).
+    _set_webhook_env(monkeypatch)
+    post_route = respx.post(f"{BASE_URL}/api/automations").mock(
+        return_value=httpx.Response(200, json={"id": "auto-1"})
+    )
+    respx.post(url__regex=rf"{BASE_URL}/api/automations/.+/start").mock(
+        return_value=httpx.Response(200, json={"id": "auto-1", "isActive": True})
+    )
+    spec = AutomationSpec(
+        name="exit-order",
+        condition="MEMORY['BTCUSDT:RSI_14'] > 70",
+        action={"type": "ORDER", "side": "SELL", "reduceOnly": True},
+    )
+    with _client() as client:
+        client.install_automations([spec])
+    action = json.loads(post_route.calls.last.request.content)["newAutomation"]["actions"][0]
+    assert action == {"type": "ORDER", "side": "SELL", "reduceOnly": True}
+    assert "webhookUrl" not in action
+    assert "webhookSecret" not in action
+
+
+@respx.mock
+def test_install_automations_webhook_env_ausente_raise_sem_post(monkeypatch) -> None:
+    # Env ausente → BetraderError("missing_webhook_config") e nenhum POST (não instala
+    # sentinela quebrada).
+    monkeypatch.delenv("WEBHOOK_PUBLIC_URL", raising=False)
+    monkeypatch.delenv("BETRADER_WEBHOOK_SECRET", raising=False)
+    post_route = respx.post(f"{BASE_URL}/api/automations")
+    with _client() as client:
+        with pytest.raises(BetraderError) as exc:
+            client.install_automations([_webhook_spec()])
+    assert exc.value.type == "missing_webhook_config"
+    assert not post_route.called
 
 
 @respx.mock

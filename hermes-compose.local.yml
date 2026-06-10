@@ -1,10 +1,12 @@
 # scaffold binance-project provando reuso do engine Hermes publicado
 # Portas: 8644 (gateway) / 6381 (redis) / 9468 (metrics) / 9121 (dashboard)
+#         8645 (webhook-shim — sidecar, publicado via netns do gateway)
 #         Não colidem com defi-project  (8642/9119/9466/6379)
 #                          nem forex-project (8643/9120/9467/6380)
 #
 # Nota: o engine expõe o gateway internamente em :8644 (porta configurável).
 # Mapeamento same:same para simplificar debugging local.
+# Webhook nativo do engine (:8646) é loopback-only — NÃO exposto no host.
 
 networks:
   binance:
@@ -24,6 +26,7 @@ services:
       - redis
     ports:
       - "8644:8644"
+      - "8645:8645"
       - "9468:9468"
     volumes:
       - ./hermes:/opt/data
@@ -31,10 +34,32 @@ services:
       HERMES_DATA_DIR: /opt/data
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      WEBHOOK_ENABLED: "true"
+      WEBHOOK_PORT: "8646"
+      WEBHOOK_SECRET: ${BETRADER_WEBHOOK_SECRET}
     env_file:
       - hermes/.env
     networks:
       - binance
+
+  webhook-shim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: local
+    # Sidecar do gateway: compartilha netns (alcança 127.0.0.1:8646) e publica
+    # 8645 via o processo do gateway. NÃO declarar ports/networks aqui.
+    network_mode: "service:gateway"
+    command: ["sh", "-c", "python scripts/webhook_shim.py"]
+    working_dir: /opt/data
+    volumes:
+      - ./hermes:/opt/data
+    environment:
+      HERMES_DATA_DIR: /opt/data
+    env_file:
+      - hermes/.env
+    depends_on:
+      - gateway
 
   dashboard:
     image: ghcr.io/fabiosiqueira/hermes-engine:latest

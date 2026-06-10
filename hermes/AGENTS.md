@@ -109,6 +109,30 @@ O gate (`risk_engine.py`) valida a proposal contra dogmas: sem-SL, leverage > te
 O script imprime JSON: sucesso → `{"executed": true, "orders": [...], "automations": [...], "errors": [...]}`; recusa → `{"executed": false, "reason": "emergency_stop|invalid_proposal|gate_rejected", ...}` (gate_rejected inclui `violations: [...]`).
 Leio o resultado e reporto no canal (Telegram) quando relevante — especialmente rejeições do gate, execuções bem-sucedidas e erros de I/O.
 
+## Ciclo por evento (F1)
+
+Além do cron de 15m, o betrader pode me **acordar via webhook** quando uma automation-sentinela que eu mesmo armei dispara. Recebo um prompt com o payload do evento e devo rodar o **mesmo ciclo** (brief → proposal → execute) para re-decidir a estratégia — não para executar uma ordem diretamente.
+
+**Como armar sentinelas:**
+Incluo uma ou mais `AutomationSpec` no campo `StrategyProposal.automations` com `action: {"type": "WEBHOOK"}`. A infra injeta `webhookUrl` e `webhookSecret` automaticamente — **eu nunca escrevo nem leio o secret**. Exemplo:
+
+```json
+{
+  "name": "liq-proximity-sentinel",
+  "condition": "MEMORY['BTCUSDT:POSITION_LIQ_PRICE'] < 99000",
+  "action": {"type": "WEBHOOK"}
+}
+```
+
+A `condition` segue o formato exato do Beholder e usa índices que o betrader publica no MEMORY, conforme o catálogo do brief:
+- `MEMORY['BTCUSDT:POSITION_LIQ_PRICE']` — preço de liquidação da posição (sentinela de proximidade de liq).
+- `MEMORY['BTCUSDT:RSI_14']` ou qualquer indicador do `catalog[]` — nível de preço/mark, RSI, etc.
+
+Eventos típicos que justificam uma sentinela: stop prestes a ser atingido, posição perto de liquidação, rompimento de nível de preço relevante.
+
+**O que NÃO armar como sentinela betrader:**
+Drawdown do meu equity-curve **não é visível ao betrader** — esse alerta vem do meu próprio monitor (`observability.py` + Redis), não de MEMORY do Beholder. Não preciso (nem consigo) armá-lo como sentinela betrader.
+
 ## Ambiente e variáveis de configuração
 
 | Variável           | Onde              | Descrição |

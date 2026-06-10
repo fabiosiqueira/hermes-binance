@@ -422,17 +422,48 @@ class BetraderClient:
 
     # --- Automations ---
 
+    def _webhook_action(self, action: dict) -> dict:
+        """Injeta webhookUrl/webhookSecret (do ambiente) em action do tipo WEBHOOK.
+
+        Lê WEBHOOK_PUBLIC_URL e BETRADER_WEBHOOK_SECRET de os.environ; ausente/vazia →
+        BetraderError type="missing_webhook_config" ANTES do POST (não instala sentinela
+        quebrada). NÃO muta a action recebida — retorna dict novo. O secret JAMAIS é
+        logado/exposto em repr/str.
+        """
+        url = os.environ.get("WEBHOOK_PUBLIC_URL")
+        secret = os.environ.get("BETRADER_WEBHOOK_SECRET")
+        if not url or not secret:
+            faltando = [
+                nome
+                for nome, valor in (
+                    ("WEBHOOK_PUBLIC_URL", url),
+                    ("BETRADER_WEBHOOK_SECRET", secret),
+                )
+                if not valor
+            ]
+            raise BetraderError(
+                "missing_webhook_config",
+                f"variáveis de ambiente ausentes: {', '.join(faltando)}",
+            )
+        return {**action, "webhookUrl": url, "webhookSecret": secret}
+
     def install_automations(self, automations: list[AutomationSpec]) -> list[str]:
         """Instala automations de gestão/saída no Beholder; retorna os ids criados.
 
         POST /api/automations (+ start). condition/action repassados conforme schema.
+        Actions WEBHOOK recebem webhookUrl/webhookSecret do ambiente (sem mutar o spec).
         """
         ids: list[str] = []
         for spec in automations:
+            action = (
+                self._webhook_action(spec.action)
+                if spec.action.get("type") == "WEBHOOK"
+                else spec.action
+            )
             new_automation: dict = {
                 "name": spec.name,
                 "conditions": [{"condition": spec.condition}],
-                "actions": [spec.action],
+                "actions": [action],
             }
             if spec.schedule:
                 new_automation["schedule"] = spec.schedule
