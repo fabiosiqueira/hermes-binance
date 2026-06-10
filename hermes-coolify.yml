@@ -6,12 +6,56 @@
 #
 # Env vars: cadastradas no Coolify env tab (NÃO no .env, que é gitignored e não
 # está no repo). Lidas do hermes/.env local e injetadas via MCP no deploy:
-#   gateway:  MINIMAX_API_KEY, OPENROUTER_API_KEY,
-#             TELEGRAM_BOT_TOKEN, TELEGRAM_ALLOWED_USERS, TELEGRAM_HOME_CHANNEL,
-#             BETRADER_BASE_URL, BETRADER_TOKEN, BETRADER_USER,
-#             EXECUTION_MODE, EMERGENCY_STOP, INITIAL_EQUITY
+#   gateway:      MINIMAX_API_KEY, OPENROUTER_API_KEY,
+#                 TELEGRAM_BOT_TOKEN, TELEGRAM_ALLOWED_USERS, TELEGRAM_HOME_CHANNEL,
+#                 BETRADER_USER, EXECUTION_MODE, EMERGENCY_STOP, INITIAL_EQUITY,
+#                 GATEWAY_URL, GATEWAY_TOKEN
+#   risk-gateway: BETRADER_BASE_URL, BETRADER_TOKEN, BETRADER_USER,
+#                 EXECUTION_MODE, EMERGENCY_STOP, INITIAL_EQUITY,
+#                 SYMBOL, TIMEFRAME, BRIEF_CACHE_TTL_SECONDS,
+#                 GATEWAY_TOKEN, WEBHOOK_PUBLIC_URL, BETRADER_WEBHOOK_SECRET
+#
+# Isolamento (F2): o risk-gateway roda scripts+dogmas BAKED na imagem (sem
+# volume compartilhado — o agente não pode editar o código/constituição que o
+# gate executa) e usa o risk-redis na rede `risk` (brief cache, financial_state
+# e decisões inforjáveis: o agente não alcança esse Redis).
 
 services:
+  # Risk Gateway (F2): detém BETRADER_TOKEN; gate + execução de ordens via betrader REST.
+  risk-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: vps
+    command: ["sh", "-c", "python scripts/risk_gateway.py"]
+    working_dir: /opt/data
+    restart: unless-stopped
+    depends_on:
+      risk-redis:
+        condition: service_healthy
+    environment:
+      HERMES_DATA_DIR: /opt/data
+      REDIS_HOST: risk-redis
+      REDIS_PORT: "6379"
+      # secrets (Coolify env tab)
+      BETRADER_BASE_URL: ${BETRADER_BASE_URL}
+      BETRADER_TOKEN: ${BETRADER_TOKEN}
+      BETRADER_USER: ${BETRADER_USER}
+      EXECUTION_MODE: ${EXECUTION_MODE}
+      EMERGENCY_STOP: ${EMERGENCY_STOP}
+      INITIAL_EQUITY: ${INITIAL_EQUITY}
+      SYMBOL: ${SYMBOL}
+      TIMEFRAME: ${TIMEFRAME}
+      BRIEF_CACHE_TTL_SECONDS: ${BRIEF_CACHE_TTL_SECONDS}
+      GATEWAY_TOKEN: ${GATEWAY_TOKEN}
+      WEBHOOK_PUBLIC_URL: ${WEBHOOK_PUBLIC_URL}
+      BETRADER_WEBHOOK_SECRET: ${BETRADER_WEBHOOK_SECRET}
+    # SEM volume: scripts/ e dogmas.yaml vêm baked da imagem (target vps).
+    # Estado financeiro/brief vivem no risk-redis — nada a persistir em disco.
+    networks:
+      - binance
+      - risk
+
   # Hermes agent (binance). Data dir baked na imagem (target vps); volume semeia dele.
   gateway:
     build:
@@ -23,6 +67,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      risk-gateway:
+        condition: service_started
     environment:
       HERMES_DATA_DIR: /opt/data
       REDIS_HOST: redis
@@ -33,12 +79,12 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_ALLOWED_USERS: ${TELEGRAM_ALLOWED_USERS}
       TELEGRAM_HOME_CHANNEL: ${TELEGRAM_HOME_CHANNEL}
-      BETRADER_BASE_URL: ${BETRADER_BASE_URL}
-      BETRADER_TOKEN: ${BETRADER_TOKEN}
       BETRADER_USER: ${BETRADER_USER}
       EXECUTION_MODE: ${EXECUTION_MODE}
       EMERGENCY_STOP: ${EMERGENCY_STOP}
       INITIAL_EQUITY: ${INITIAL_EQUITY}
+      GATEWAY_URL: "http://risk-gateway:8647"
+      GATEWAY_TOKEN: ${GATEWAY_TOKEN}
     volumes:
       - hermes-data:/opt/data
     networks:
@@ -58,10 +104,29 @@ services:
       timeout: 3s
       retries: 5
 
+  # Redis PRIVADO do risk-gateway (rede `risk`, fora do alcance do agente):
+  # brief cache, financial_state e stream de decisões.
+  risk-redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - binance-risk-redis-data:/data
+    networks:
+      - risk
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 networks:
   binance:
+    driver: bridge
+  risk:
     driver: bridge
 
 volumes:
   hermes-data:
   binance-redis-data:
+  binance-risk-redis-data:

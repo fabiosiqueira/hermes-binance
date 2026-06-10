@@ -30,11 +30,9 @@ Data dir / home do Hermes Agent para o projeto Binance Futures (`fabiosiqueira/h
 - Porta exposta no host: 6381 (para debug manual via `redis-cli -p 6381`).
 
 ### betrader-hydra (executor)
-- API REST do betrader, acessada **exclusivamente** pelos scripts do ciclo (`scripts/betrader_client.py`, `scripts/strategist_cycle.py`).
-- Env injetado: `BETRADER_BASE_URL` (ex.: `http://betrader:8080`) e `BETRADER_TOKEN` (Bearer `bht_…`).
-- **BETRADER_TOKEN é secret — nunca expor em log, raciocínio visível ou arquivo.**
+- API REST do betrader, acessada **exclusivamente** pelo serviço **Risk Gateway** (`risk-gateway`) — container separado que detém `BETRADER_TOKEN` e `BETRADER_BASE_URL`. O agente (HAWK) **não tem BETRADER_TOKEN** e nunca chama o betrader diretamente.
 - Sem MCP: integração via contrato de dados (brief/proposal), não tools ao vivo.
-- Rotas usadas pelo ciclo: `GET /api/indicators`, `GET /api/market`, `GET /api/futures`, `GET /api/exchange/balance`, `GET /api/beholder/memory`, `GET/POST /api/monitors`, `GET/POST/PUT/DELETE /api/automations`, `POST /api/orders`, `PUT /api/futures/{symbol}`.
+- Rotas usadas pelo Risk Gateway internamente: `GET /api/indicators`, `GET /api/market`, `GET /api/futures`, `GET /api/exchange/balance`, `GET /api/beholder/memory`, `GET/POST /api/monitors`, `GET/POST/PUT/DELETE /api/automations`, `POST /api/orders`, `PUT /api/futures/{symbol}` (o agente não as chama diretamente — usa a CLI).
 
 ## Mapa rápido
 - `config.yaml` — modelo/provider, personality "hawk", toolsets, memory, curator, terminal etc. Editar com **menor mudança possível**; `.bak` é gerado automaticamente.
@@ -43,15 +41,16 @@ Data dir / home do Hermes Agent para o projeto Binance Futures (`fabiosiqueira/h
 - `dogmas.yaml` — constituição de risco determinística. **Read-only para mim.** Operador preenche/edita. O gate (`risk_engine.py`) valida proposals contra estes dogmas; nunca os burlo ou edito.
 - `scripts/` — ferramentas **determinísticas** do ciclo estrategista, mantidas pelo repo (não criadas livremente por mim em runtime). Os scripts existentes são código de produção testado:
   - `schemas.py` — `Brief`, `StrategyProposal`, `Dogmas` (pydantic). Fonte de verdade dos contratos.
-  - `betrader_client.py` — cliente REST: `fetch_brief()` + operações de escrita.
-  - `risk_engine.py` — gate in-process: valida proposal contra dogmas. **Read-only para mim.**
-  - `strategist_cycle.py` — orquestrador do ciclo: brief → propose → gate → execute → record.
+  - `betrader_client.py` — cliente REST do betrader (usado internamente pelo Risk Gateway).
+  - `risk_engine.py` — lógica de gate (valida proposal contra dogmas). Composto pelo Risk Gateway; **read-only**.
+  - `risk_gateway.py` — **serviço Risk Gateway** (F2): detém o token, aplica os Dogmas, cacheia o brief no Redis, executa no betrader. Roda no container `risk-gateway` separado; o agente não o chama diretamente.
+  - `strategist_cycle.py` — **thin-client HTTP** do ciclo: envia brief/proposal ao Risk Gateway via HTTP. Mesma CLI (`brief|execute`), mesmo contrato de stdout — mas não detém token nem enforça regras.
   - `observability.py` — métricas Prometheus, estado financeiro persistido.
 - `memories/MEMORY.md` (≤2200 chars) e `memories/USER.md` (≤1375) — working set congelado no system prompt (ensinamentos de alto nível, preferências, estado atual relevante).
 - `memory/hermes_memory.db` — long-term store persistente (provider `local_sqlite`, FTS5). Guardo ensinamentos do Fábio, histórico de proposals/execuções, decisões, lições.
 - `workspace/` — área de trabalho para arquivos temporários gerados pelo ciclo (ex.: `brief.json`, `proposal.json`). Não versionado.
 - `plans/`, `cron/` — tarefas agendadas (cron de 15m) e planos.
-- `.env` (no data dir) — secrets (`BETRADER_TOKEN`, `BETRADER_BASE_URL`, `EXECUTION_MODE` etc.). **Nunca** versionado; injetado via env_file no compose.
+- `.env` (no data dir) — secrets compartilhados (ex.: `EXECUTION_MODE`, `GATEWAY_TOKEN`, `BETRADER_TOKEN`/`BETRADER_BASE_URL` — estes dois usados **só** pelo serviço `risk-gateway`). **Nunca** versionado; injetado via env_file no compose.
 
 ## Ciclo do estrategista (cron 15m)
 
@@ -99,14 +98,14 @@ Schema `StrategyProposal` (exemplo VÁLIDO — campos e tipos exatos de `scripts
 Os schemas completos e validações estão em `scripts/schemas.py`.
 Os dogmas que o gate aplica estão em `dogmas.yaml` (leio antes de propor).
 
-**(c) Gate + execução:**
+**(c) Gate + execução (no Risk Gateway):**
 ```
 python scripts/strategist_cycle.py execute workspace/proposal.json
 ```
-O gate (`risk_engine.py`) valida a proposal contra dogmas: sem-SL, leverage > teto, %equity estourado, drawdown diário estourado, emergency_stop. Se válida: `betrader_client` executa entrada+stop (atômico, rollback se stop falhar) + instala automations. `observability` registra decisão e atualiza métricas.
+O thin-client envia a proposal ao Risk Gateway via `POST GATEWAY_URL/execute`. **O enforcement acontece no serviço separado (`risk-gateway`):** `emergency_stop`, `assert_testnet` (DRY_RUN) e `validate` (dogmas) rodam lá — o agente não enforça nada. Se válida: o gateway executa entrada+stop (atômico, rollback se stop falhar) + instala automations + registra decisão e métricas.
 
 **(d) Resultado:**
-O script imprime JSON: sucesso → `{"executed": true, "orders": [...], "automations": [...], "errors": [...]}`; recusa → `{"executed": false, "reason": "emergency_stop|invalid_proposal|gate_rejected", ...}` (gate_rejected inclui `violations: [...]`).
+O script imprime JSON: sucesso → `{"executed": true, "orders": [...], "automations": [...], "errors": [...]}`; recusa → `{"executed": false, "reason": "emergency_stop|brief_missing|invalid_proposal|gate_rejected|gateway_error|missing_gateway_config", ...}` (gate_rejected inclui `violations: [...]`). `brief_missing` = o brief cacheado no gateway expirou — rode `brief` de novo antes de re-executar. `gateway_error`/`missing_gateway_config` = problema de infra/config do Risk Gateway, não da proposta — reporte no canal.
 Leio o resultado e reporto no canal (Telegram) quando relevante — especialmente rejeições do gate, execuções bem-sucedidas e erros de I/O.
 
 ## Ciclo por evento (F1)
@@ -135,14 +134,16 @@ Drawdown do meu equity-curve **não é visível ao betrader** — esse alerta ve
 
 ## Ambiente e variáveis de configuração
 
-| Variável           | Onde              | Descrição |
-|--------------------|-------------------|-----------|
-| `REDIS_HOST`       | compose + todos   | Host do Redis. **Sempre ler daqui.** |
-| `REDIS_PORT`       | compose + todos   | Porta do Redis. |
-| `BETRADER_BASE_URL`| compose + .env    | URL base do betrader (ex.: `http://betrader:8080`). |
-| `BETRADER_TOKEN`   | .env (gitignored) | Bearer token `bht_…`. **Nunca expor.** |
-| `EXECUTION_MODE`   | .env / compose    | `DRY_RUN` (default, testnet), `HOM`, `PROD`. |
-| `HERMES_DATA_DIR`  | compose (gateway) | Raiz do data dir (`/opt/data`). |
+| Variável           | Onde                   | Descrição |
+|--------------------|------------------------|-----------|
+| `REDIS_HOST`       | compose + todos        | Host do Redis. **Sempre ler daqui.** |
+| `REDIS_PORT`       | compose + todos        | Porta do Redis. |
+| `GATEWAY_URL`      | compose (agente)       | URL do Risk Gateway (ex.: `http://risk-gateway:8647`). Env do container do agente. |
+| `GATEWAY_TOKEN`    | .env (gitignored)      | Token de autenticação do agente no Risk Gateway (`gwt_…`). **Nunca expor.** |
+| `EXECUTION_MODE`   | .env / compose         | `DRY_RUN` (default, testnet), `HOM`, `PROD`. |
+| `HERMES_DATA_DIR`  | compose (agente)       | Raiz do data dir (`/opt/data`). |
+| `BETRADER_BASE_URL`| .env — **risk-gateway**| URL base do betrader. Pertence ao serviço `risk-gateway`; o agente não usa. |
+| `BETRADER_TOKEN`   | .env — **risk-gateway**| Bearer token `bht_…`. Pertence ao serviço `risk-gateway`. **Nunca expor; o agente não tem acesso.** |
 
 Outras (provider keys, etc.) vêm de `.env` — nunca hardcode.
 

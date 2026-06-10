@@ -1,17 +1,16 @@
-# CLI do ciclo do estrategista Hermes (duas metades: brief + execute).
+# CLI do ciclo do estrategista Hermes (thin-client HTTP do Risk Gateway).
 #
-# Orquestra os 4 módulos do Cluster 3 (schemas, risk_engine, betrader_client,
-# observability) seguindo o contrato documentado em hermes/AGENTS.md ("Ciclo do
-# estrategista") e na spec de design. NÃO contém lógica de risco ou de I/O própria —
-# só compõe os módulos na ordem exata do spec.
+# Este módulo é um CLIENTE BURRO: não valida dogmas, não chama betrader, não toca
+# Redis. Todo enforcement de risco fica no gateway (risk_gateway.py). O agente LLM
+# (HAWK) só fala com o gateway via HTTP.
 #
-# Consumidor do stdout é o agente LLM (HAWK): a saída é SEMPRE JSON ou um path
-# absoluto, NUNCA traceback cru. Todo catch de I/O externo chama record_error(type)
-# e segue o contrato JSON.
+# Contrato de stdout (inalterado): `brief` imprime o PATH absoluto do brief.json;
+# `execute` imprime JSON {"executed": ...}. NUNCA traceback cru.
 #
-# Imports são flat (from schemas import ...) porque os módulos do Cluster 3 também
-# importam assim; o diretório do script entra no sys.path quando rodado como
-# `python scripts/strategist_cycle.py ...`.
+# Env vars necessários do lado do cliente:
+#   GATEWAY_URL    ex.: http://risk-gateway:8647
+#   GATEWAY_TOKEN  token de autenticação do gateway
+#   (brief apenas) SYMBOL, TIMEFRAME, EXECUTION_MODE
 import argparse
 import json
 import os
@@ -19,75 +18,23 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+import httpx
 from pydantic import ValidationError
 
-from schemas import (
-    Brief,
-    ExecutionMode,
-    StrategyProposal,
-    load_dogmas,
-)
-
-from betrader_client import BetraderClient, BetraderError
-from observability import FinancialState, Observability, maybe_trigger_drawdown_wake
-from risk_engine import check_emergency_stop, validate
+from schemas import ExecutionMode, StrategyProposal
 
 # Workspace dos artefatos do ciclo (brief.json, proposal.json) — relativo ao cwd
 # do agente (que roda a partir de hermes/), conforme AGENTS.md.
 _WORKSPACE = Path("workspace")
 _BRIEF_PATH = _WORKSPACE / "brief.json"
+_PROPOSAL_PATH = _WORKSPACE / "proposal.json"
 
-# Dogmas vivem ao lado do data dir, relativo ao próprio script (não ao cwd).
-_DOGMAS_PATH = Path(__file__).parent.parent / "dogmas.yaml"
-
-
-def _build_redis():
-    """Constrói o cliente Redis da fronteira de I/O a partir do env.
-
-    REDIS_HOST/REDIS_PORT conforme AGENTS.md. decode_responses=True para que o
-    FinancialState leia strings (não bytes) na desserialização.
-    """
-    import redis
-
-    host = os.environ.get("REDIS_HOST", "localhost")
-    port = int(os.environ.get("REDIS_PORT", "6379"))
-    return redis.Redis(host=host, port=port, decode_responses=True)
+_AUTH_HEADER = "Authorization"
+_BEARER_PREFIX = "Bearer "
 
 
-def _ref_price(brief: Brief) -> Optional[float]:
-    """Último close do brief para dimensionar ordens MARKET (contrato do Cluster 3)."""
-    if brief.market.candles:
-        return brief.market.candles[-1].close
-    return None
-
-
-def _cmd_brief(
-    *,
-    redis_client: object,
-    observability: Observability,
-) -> int:
-    """Metade 1: monta o Brief e escreve workspace/brief.json.
-
-    Lê env (SYMBOL/TIMEFRAME/EXECUTION_MODE), garante monitor, carrega o estado
-    financeiro do Redis e busca o brief no betrader. Única saída no stdout é o path
-    absoluto do brief.json.
-    """
-    symbol = os.environ.get("SYMBOL", "BTCUSDT")
-    timeframe = os.environ.get("TIMEFRAME", "15m")
-    mode = ExecutionMode(os.environ.get("EXECUTION_MODE", "DRY_RUN"))
-
-    client = BetraderClient.from_env(on_error=observability.record_error)
-    try:
-        client.ensure_monitor(symbol, timeframe)
-        state = FinancialState.load(redis_client)
-        brief = client.fetch_brief(symbol, timeframe, mode, state.to_risk_state())
-    finally:
-        client.close()
-
-    _WORKSPACE.mkdir(parents=True, exist_ok=True)
-    _BRIEF_PATH.write_text(brief.model_dump_json(indent=2), encoding="utf-8")
-    print(str(_BRIEF_PATH.resolve()))
-    return 0
+def _gateway_headers(token: str) -> dict:
+    return {_AUTH_HEADER: f"{_BEARER_PREFIX}{token}"}
 
 
 def _emit(payload: dict) -> int:
@@ -96,150 +43,123 @@ def _emit(payload: dict) -> int:
     return 0
 
 
-def _cmd_execute(
-    proposal_path: str,
-    *,
-    redis_client: object,
-    observability: Observability,
-) -> int:
-    """Metade 2: gate + execução da proposta, na ordem exata do spec.
+def _emit_error(reason: str, detail: str = "") -> int:
+    payload: dict = {"executed": False, "reason": reason}
+    if detail:
+        payload["detail"] = detail
+    return _emit(payload)
 
-    Contrato de stdout: SEMPRE JSON {"executed": ...}; nunca traceback. Estado
-    financeiro persistido ANTES de imprimir o resultado (integridade bot.md).
+
+def _load_gateway_config() -> tuple[str, str] | None:
+    """Lê GATEWAY_URL e GATEWAY_TOKEN do env. Retorna None se ausentes."""
+    url = os.environ.get("GATEWAY_URL", "").strip()
+    token = os.environ.get("GATEWAY_TOKEN", "").strip()
+    if not url or not token:
+        return None
+    return url, token
+
+
+def _cmd_brief(*, http_client: httpx.Client) -> int:
+    """Metade 1: solicita Brief ao gateway e escreve workspace/brief.json.
+
+    Envia {symbol, timeframe, mode} ao POST /brief do gateway; escreve a resposta
+    JSON em workspace/brief.json e imprime o path absoluto.
     """
-    # (a) kill switch via env, checado no início — sem throw.
-    if check_emergency_stop():
-        return _emit({"executed": False, "reason": "emergency_stop"})
+    config = _load_gateway_config()
+    if config is None:
+        print(
+            json.dumps({"executed": False, "reason": "missing_gateway_config"}),
+            file=sys.stderr,
+        )
+        return 1
 
-    # (b) carrega a proposta; ValidationError vira JSON (o agente lê e corrige).
+    gateway_url, token = config
+    symbol = os.environ.get("SYMBOL", "BTCUSDT")
+    timeframe = os.environ.get("TIMEFRAME", "15m")
+    mode = ExecutionMode(os.environ.get("EXECUTION_MODE", "DRY_RUN"))
+
+    try:
+        resp = http_client.post(
+            f"{gateway_url}/brief",
+            json={"symbol": symbol, "timeframe": timeframe, "mode": mode},
+            headers=_gateway_headers(token),
+        )
+        resp.raise_for_status()
+    except httpx.HTTPError as exc:
+        print(
+            json.dumps({"executed": False, "reason": "gateway_error", "detail": str(exc)}),
+            file=sys.stderr,
+        )
+        return 1
+
+    _WORKSPACE.mkdir(parents=True, exist_ok=True)
+    _BRIEF_PATH.write_text(resp.text, encoding="utf-8")
+    print(str(_BRIEF_PATH.resolve()))
+    return 0
+
+
+def _cmd_execute(proposal_path: str, *, http_client: httpx.Client) -> int:
+    """Metade 2: envia proposta ao gateway e repassa o resultado.
+
+    Lê workspace/proposal.json, valida schema localmente (captura inválidos antes
+    de trafegar pela rede) e POST /execute ao gateway. Repassa o JSON da resposta
+    fielmente, sem qualquer reinterpretação de risco.
+    """
+    config = _load_gateway_config()
+    if config is None:
+        return _emit_error("missing_gateway_config")
+
+    gateway_url, token = config
+
+    # Carrega e valida a proposta localmente (só schema, sem regras de risco).
     try:
         raw = Path(proposal_path).read_text(encoding="utf-8")
-        proposal = StrategyProposal.model_validate_json(raw)
+        StrategyProposal.model_validate_json(raw)
     except ValidationError as exc:
-        return _emit(
-            {"executed": False, "reason": "invalid_proposal", "detail": exc.errors()}
-        )
+        return _emit({"executed": False, "reason": "invalid_proposal", "detail": exc.errors()})
     except OSError as exc:
-        observability.record_error("proposal_read_error")
-        return _emit(
-            {"executed": False, "reason": "invalid_proposal", "detail": str(exc)}
-        )
+        return _emit({"executed": False, "reason": "invalid_proposal", "detail": str(exc)})
 
-    # (c) recarrega o brief do workspace + dogmas.
+    # Envia ao gateway (corpo = raw JSON exato lido do arquivo).
     try:
-        brief = Brief.model_validate_json(_BRIEF_PATH.read_text(encoding="utf-8"))
-        dogmas = load_dogmas(_DOGMAS_PATH)
-    except (OSError, ValidationError) as exc:
-        observability.record_error("brief_reload_error")
-        return _emit(
-            {"executed": False, "reason": "invalid_proposal", "detail": str(exc)}
+        resp = http_client.post(
+            f"{gateway_url}/execute",
+            content=raw.encode(),
+            headers={
+                **_gateway_headers(token),
+                "Content-Type": "application/json",
+            },
         )
+        resp.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        return _emit_error("gateway_error", f"HTTP {exc.response.status_code}")
+    except httpx.HTTPError as exc:
+        return _emit_error("gateway_error", str(exc))
 
-    state = FinancialState.load(redis_client)
-    maybe_trigger_drawdown_wake(
-        state,
-        dogmas.max_daily_drawdown_pct,
-        on_error=observability.record_error,
-    )
-
-    # (d) gate determinístico.
-    result = validate(proposal, dogmas, brief)
-    if not result.ok:
-        observability.record_decision(
-            proposal.model_dump(), gate_ok=False, reason=result.reason, redis=redis_client
-        )
-        return _emit(
-            {
-                "executed": False,
-                "reason": "gate_rejected",
-                "violations": result.violations,
-            }
-        )
-
-    # (e) aprovado → execução. teardown → entries → install_automations.
-    orders: list[dict] = []
-    automations: list[str] = []
-    errors: list[str] = []
-    client = BetraderClient.from_env(on_error=observability.record_error)
-    try:
-        if brief.mode == ExecutionMode.DRY_RUN:
-            client.assert_testnet()
-
-        if proposal.teardown:
-            try:
-                client.teardown(proposal.teardown)
-            except BetraderError as exc:
-                observability.record_error(exc.type)
-                errors.append(exc.type)
-
-        ref_price = _ref_price(brief)
-        for entry in proposal.entries:
-            # Falha de uma entry NÃO aborta as automations, mas é coletada.
-            try:
-                order = client.place_entry_with_stop(
-                    entry, brief.portfolio.equity, ref_price=ref_price
-                )
-                orders.append(order)
-            except BetraderError as exc:
-                observability.record_error(exc.type)
-                errors.append(exc.type)
-
-        if proposal.automations:
-            try:
-                automations = client.install_automations(proposal.automations)
-            except BetraderError as exc:
-                observability.record_error(exc.type)
-                errors.append(exc.type)
-    except BetraderError as exc:
-        # assert_testnet falhou (ou outra falha fora do laço): aborta a escrita.
-        observability.record_error(exc.type)
-        errors.append(exc.type)
-    finally:
-        client.close()
-
-    # (f) observability: decisão + ciclo, e PERSISTE o estado ANTES de imprimir.
-    observability.record_decision(
-        proposal.model_dump(), gate_ok=True, reason=None, redis=redis_client
-    )
-    observability.record_cycle()
-    state.persist(redis_client)
-
-    # (g) resumo do ciclo.
-    return _emit(
-        {
-            "executed": True,
-            "orders": orders,
-            "automations": automations,
-            "errors": errors,
-        }
-    )
+    return _emit(resp.json())
 
 
 def main(
     argv: Optional[list[str]] = None,
     *,
-    redis_client: object = None,
-    observability: Optional[Observability] = None,
+    http_client: Optional[httpx.Client] = None,
 ) -> int:
-    """Ponto de entrada do CLI. argv injetável para testes; idem redis/observability
-    (fronteiras de I/O), default = clientes reais a partir do env.
+    """Ponto de entrada do CLI. argv injetável para testes; http_client é a fronteira
+    de I/O do gateway (default = httpx.Client real).
     """
     parser = argparse.ArgumentParser(prog="strategist_cycle")
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("brief", help="monta o Brief e escreve workspace/brief.json")
-    p_exec = sub.add_parser("execute", help="gate + execução de uma proposta")
+    sub.add_parser("brief", help="solicita Brief ao gateway e escreve workspace/brief.json")
+    p_exec = sub.add_parser("execute", help="envia proposta ao gateway e repassa resultado")
     p_exec.add_argument("proposal", help="path do proposal.json (StrategyProposal)")
 
     args = parser.parse_args(argv)
 
-    redis_client = redis_client if redis_client is not None else _build_redis()
-    observability = observability if observability is not None else Observability()
+    client = http_client if http_client is not None else httpx.Client()
 
     if args.command == "brief":
-        return _cmd_brief(redis_client=redis_client, observability=observability)
-    return _cmd_execute(
-        args.proposal, redis_client=redis_client, observability=observability
-    )
+        return _cmd_brief(http_client=client)
+    return _cmd_execute(args.proposal, http_client=client)
 
 
 if __name__ == "__main__":

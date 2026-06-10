@@ -1,105 +1,51 @@
-# Testes de integração do ciclo do estrategista (brief + execute).
+# Testes de integração do ciclo do estrategista (thin-client HTTP do Risk Gateway).
 #
-# DI real nos módulos internos; mocks SÓ nas fronteiras de I/O: HTTP betrader via
-# respx, Redis via fakeredis. main(argv, redis_client=, observability=) é invocado
-# diretamente (capsys captura o stdout JSON/path). Os payloads HTTP reutilizam os
-# shapes reais do doc de verificação (espelham os do unit test do betrader_client).
+# Mocks SÓ na fronteira de I/O: gateway HTTP via respx + httpx.Client injetado.
+# fakeredis NÃO é mais necessário — o cliente não toca Redis.
+# main(argv, http_client=) é invocado diretamente; capsys captura stdout.
 import json
 
-import fakeredis
 import httpx
 import pytest
 import respx
 
-from observability import Observability
-
 from strategist_cycle import main
 
-BASE_URL = "https://betrader.example.test"
-TOKEN = "bht_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd"
+GATEWAY_URL = "http://risk-gateway.test:8647"
+GATEWAY_TOKEN = "gw_test_token_abc123"
 
 
-# --- Payloads (shapes reais do doc de verificação) ---
+# --- Payloads de exemplo ---
 
 
-def _users_payload(*, is_testnet: bool = True) -> dict:
-    return {"rows": [{"name": "hermes", "isTestnet": is_testnet}], "count": 1}
-
-
-def _monitors_payload() -> dict:
+def _brief_payload() -> dict:
     return {
-        "rows": [
-            {
-                "id": "mon-1",
-                "symbol": "BTCUSDT",
-                "type": "CANDLES",
-                "interval": "15m",
-                "isActive": True,
-            }
-        ],
-        "count": 1,
+        "symbol": "BTCUSDT",
+        "timeframe": "15m",
+        "mode": "DRY_RUN",
+        "market": {
+            "symbol": "BTCUSDT",
+            "timeframe": "15m",
+            "candles": [],
+            "indicators": {"RSI": 55.0},
+        },
+        "portfolio": {
+            "equity": 10000.0,
+            "positions": [],
+            "automations": [],
+            "spot_balance": 8000.0,
+            "beholder_memory": {},
+            "automation_indexes": {},
+        },
+        "risk": {
+            "daily_pnl": 0.0,
+            "drawdown_pct": 0.0,
+            "equity_curve_ref": "binance:strategist:financial_state",
+        },
     }
 
 
-def _indicators_payload() -> dict:
-    return {"RSI": {"params": "period", "name": "RSI"}}
-
-
-def _market_payload() -> dict:
-    return {"indicators": {"RSI": 55.0}}
-
-
-def _balance_future_payload() -> dict:
-    return {"assets": {"USDT": {"available": 10000}}, "fiatEstimate": "~USDT 10000.00"}
-
-
-def _balance_spot_payload() -> dict:
-    return {"assets": {"USDT": {"available": 8000}}, "fiatEstimate": "~USDT 8000.00"}
-
-
-def _futures_payload() -> list[dict]:
-    return []
-
-
-def _mock_brief_endpoints(router: respx.Router) -> None:
-    router.get(f"{BASE_URL}/api/monitors").mock(
-        return_value=httpx.Response(200, json=_monitors_payload())
-    )
-    router.get(f"{BASE_URL}/api/indicators").mock(
-        return_value=httpx.Response(200, json=_indicators_payload())
-    )
-    router.get(f"{BASE_URL}/api/market").mock(
-        return_value=httpx.Response(200, json=_market_payload())
-    )
-    router.get(
-        url=f"{BASE_URL}/api/exchange/balance", params={"isFuture": "true"}
-    ).mock(return_value=httpx.Response(200, json=_balance_future_payload()))
-    router.get(
-        url=f"{BASE_URL}/api/exchange/balance", params={"isFuture": "false"}
-    ).mock(return_value=httpx.Response(200, json=_balance_spot_payload()))
-    router.get(f"{BASE_URL}/api/futures").mock(
-        return_value=httpx.Response(200, json=_futures_payload())
-    )
-    router.get(f"{BASE_URL}/api/beholder/memory").mock(
-        return_value=httpx.Response(200, json={})
-    )
-    router.get(f"{BASE_URL}/api/automations/indexes").mock(
-        return_value=httpx.Response(200, json={})
-    )
-    router.get(f"{BASE_URL}/api/automations").mock(
-        return_value=httpx.Response(200, json=[])
-    )
-    router.get(f"{BASE_URL}/api/orders").mock(
-        return_value=httpx.Response(200, json={"rows": [], "count": 0})
-    )
-
-
-# --- Fixtures de proposta (escritas em workspace, schema StrategyProposal) ---
-
-
-def _proposal_aprovada() -> dict:
-    # LIMIT BUY: ref=limit_price=60000, stop=59000 (1.67% > min 0.5%, lado correto),
-    # sizing 5% <= teto 10%, leverage 3 <= teto 5, symbol permitido.
+def _proposal_payload() -> dict:
     return {
         "reasoning": "RSI oversold; entrada long com stop abaixo do suporte.",
         "entries": [
@@ -119,14 +65,7 @@ def _proposal_aprovada() -> dict:
     }
 
 
-def _proposal_leverage_estourado() -> dict:
-    p = _proposal_aprovada()
-    p["entries"][0]["leverage"] = 20  # > max_leverage 5
-    return p
-
-
 def _proposal_sem_stop() -> dict:
-    # stop_loss ausente → ValidationError do schema (SL é obrigatório por construção).
     return {
         "reasoning": "entrada sem stop (inválida).",
         "entries": [
@@ -142,13 +81,16 @@ def _proposal_sem_stop() -> dict:
     }
 
 
+# --- Helpers ---
+
+
 def _setup_env(monkeypatch) -> None:
-    monkeypatch.setenv("BETRADER_BASE_URL", BASE_URL)
-    monkeypatch.setenv("BETRADER_TOKEN", TOKEN)
+    monkeypatch.setenv("GATEWAY_URL", GATEWAY_URL)
+    monkeypatch.setenv("GATEWAY_TOKEN", GATEWAY_TOKEN)
     monkeypatch.setenv("EXECUTION_MODE", "DRY_RUN")
     monkeypatch.setenv("SYMBOL", "BTCUSDT")
     monkeypatch.setenv("TIMEFRAME", "15m")
-    monkeypatch.delenv("EMERGENCY_STOP", raising=False)
+    monkeypatch.delenv("BETRADER_TOKEN", raising=False)
 
 
 def _write_proposal(tmp_path, payload: dict) -> str:
@@ -157,175 +99,141 @@ def _write_proposal(tmp_path, payload: dict) -> str:
     return str(path)
 
 
-@pytest.fixture
-def redis_client():
-    return fakeredis.FakeStrictRedis(decode_responses=True)
-
-
-@pytest.fixture
-def obs():
-    # Registry dedicado por teste para isolamento das métricas.
-    return Observability()
-
-
 @pytest.fixture(autouse=True)
 def _chdir_tmp(tmp_path, monkeypatch):
     # workspace/ é relativo ao cwd; isola cada teste num tmp dir.
     monkeypatch.chdir(tmp_path)
 
 
-def _run_brief(redis_client, obs, capsys) -> str:
-    rc = main(["brief"], redis_client=redis_client, observability=obs)
-    assert rc == 0
-    return capsys.readouterr().out.strip()
+# --- Testes ---
 
 
-# --- Happy path DRY_RUN: brief → proposta aprovada → ordem+stop → estado/métricas ---
-
-
-@respx.mock
-def test_happy_path_dry_run(respx_mock, monkeypatch, redis_client, obs, capsys, tmp_path):
+def test_brief_escreve_arquivo_e_imprime_path(monkeypatch, capsys, tmp_path):
+    """(a) brief → POST /brief retorna Brief JSON; workspace/brief.json escrito; stdout = path."""
     _setup_env(monkeypatch)
-    _mock_brief_endpoints(respx_mock)
-    # Escrita: assert_testnet (GET /api/users), leverage (PUT), entrada+stop (POST orders).
-    respx_mock.get(f"{BASE_URL}/api/users").mock(
-        return_value=httpx.Response(200, json=_users_payload(is_testnet=True))
-    )
-    respx_mock.put(f"{BASE_URL}/api/futures/BTCUSDT").mock(
-        return_value=httpx.Response(200, json=[{"leverage": 3}])
-    )
-    orders_route = respx_mock.post(f"{BASE_URL}/api/orders").mock(
-        side_effect=[
-            httpx.Response(200, json={"orderId": 111, "status": "FILLED"}),
-            httpx.Response(200, json={"orderId": 222, "status": "NEW"}),
-        ]
-    )
+    brief_data = _brief_payload()
 
-    brief_path = _run_brief(redis_client, obs, capsys)
-    assert brief_path.endswith("workspace/brief.json")
+    with respx.mock(base_url=GATEWAY_URL) as mock:
+        mock.post("/brief").mock(return_value=httpx.Response(200, json=brief_data))
 
-    proposal_path = _write_proposal(tmp_path, _proposal_aprovada())
-    rc = main(["execute", proposal_path], redis_client=redis_client, observability=obs)
+        with httpx.Client() as client:
+            rc = main(["brief"], http_client=client)
+
+    assert rc == 0
+    out = capsys.readouterr().out.strip()
+    assert out.endswith("workspace/brief.json")
+
+    written = json.loads((tmp_path / "workspace" / "brief.json").read_text())
+    assert written == brief_data
+
+
+def test_execute_happy_path_repassa_gateway(monkeypatch, capsys, tmp_path):
+    """(b) execute happy → POST /execute retorna resultado; stdout == esse JSON; corpo enviado == proposal.json."""
+    _setup_env(monkeypatch)
+    gateway_response = {
+        "executed": True,
+        "orders": [{"entry_order_id": 111, "stop_order_id": 222}],
+        "automations": [],
+        "errors": [],
+    }
+    proposal_path = _write_proposal(tmp_path, _proposal_payload())
+
+    with respx.mock(base_url=GATEWAY_URL) as mock:
+        execute_route = mock.post("/execute").mock(
+            return_value=httpx.Response(200, json=gateway_response)
+        )
+
+        with httpx.Client() as client:
+            rc = main(["execute", proposal_path], http_client=client)
+
     assert rc == 0
     out = json.loads(capsys.readouterr().out.strip())
+    assert out == gateway_response
 
-    assert out["executed"] is True
-    assert out["errors"] == []
-    assert len(out["orders"]) == 1
-    assert out["orders"][0]["entry_order_id"] == 111
-    assert out["orders"][0]["stop_order_id"] == 222
-    assert orders_route.call_count == 2  # entrada + stop
-
-    # Estado financeiro persistido no Redis (integridade bot.md).
-    assert redis_client.get("binance:strategist:financial_state") is not None
-    # Decisão auditada no stream + ciclo contabilizado.
-    assert redis_client.xlen("binance:strategist:decisions") == 1
-    assert obs._cycles._value.get() == 1.0
+    # Corpo enviado ao gateway deve ser o JSON da proposta.
+    sent_body = json.loads(execute_route.calls[0].request.content)
+    assert sent_body == _proposal_payload()
 
 
-# --- Gate rejeitado: leverage estourado → violations, nenhuma escrita HTTP ---
-
-
-@respx.mock
-def test_gate_rejected_leverage(respx_mock, monkeypatch, redis_client, obs, capsys, tmp_path):
+def test_execute_gate_rejected_repassa_fielmente(monkeypatch, capsys, tmp_path):
+    """(c) execute gate_rejected → gateway retorna violations; cliente repassa sem alteração."""
     _setup_env(monkeypatch)
-    _mock_brief_endpoints(respx_mock)
-    # Rotas de ESCRITA: registradas para provar que NÃO são chamadas no gate-reject.
-    users_route = respx_mock.get(f"{BASE_URL}/api/users").mock(
-        return_value=httpx.Response(200, json=_users_payload())
-    )
-    put_route = respx_mock.put(f"{BASE_URL}/api/futures/BTCUSDT").mock(
-        return_value=httpx.Response(200, json=[])
-    )
-    post_orders = respx_mock.post(f"{BASE_URL}/api/orders").mock(
-        return_value=httpx.Response(200, json={})
-    )
+    gateway_response = {
+        "executed": False,
+        "reason": "gate_rejected",
+        "violations": ["leverage 20 > max_leverage 5"],
+    }
+    proposal_path = _write_proposal(tmp_path, _proposal_payload())
 
-    _run_brief(redis_client, obs, capsys)
-    proposal_path = _write_proposal(tmp_path, _proposal_leverage_estourado())
-    rc = main(["execute", proposal_path], redis_client=redis_client, observability=obs)
+    with respx.mock(base_url=GATEWAY_URL) as mock:
+        mock.post("/execute").mock(return_value=httpx.Response(200, json=gateway_response))
+
+        with httpx.Client() as client:
+            rc = main(["execute", proposal_path], http_client=client)
+
     assert rc == 0
     out = json.loads(capsys.readouterr().out.strip())
-
-    assert out["executed"] is False
-    assert out["reason"] == "gate_rejected"
-    assert any("leverage" in v for v in out["violations"])
-    # Nenhuma call de escrita HTTP.
-    assert not users_route.called
-    assert not put_route.called
-    assert not post_orders.called
-    # Decisão de rejeição auditada.
-    assert redis_client.xlen("binance:strategist:decisions") == 1
+    assert out == gateway_response
 
 
-# --- emergency_stop: nenhuma call HTTP, JSON específico ---
-
-
-@respx.mock
-def test_emergency_stop(respx_mock, monkeypatch, redis_client, obs, capsys, tmp_path):
-    _setup_env(monkeypatch)
-    monkeypatch.setenv("EMERGENCY_STOP", "true")
-    # Qualquer rota: provar que NENHUMA é chamada (respx levantaria em call não-mockada).
-    proposal_path = _write_proposal(tmp_path, _proposal_aprovada())
-    rc = main(["execute", proposal_path], redis_client=redis_client, observability=obs)
-    assert rc == 0
-    out = json.loads(capsys.readouterr().out.strip())
-    assert out == {"executed": False, "reason": "emergency_stop"}
-    assert respx_mock.calls.call_count == 0
-
-
-# --- Proposta inválida (sem stop_loss) → reason invalid_proposal ---
-
-
-@respx.mock
-def test_proposal_invalida_sem_stop(respx_mock, monkeypatch, redis_client, obs, capsys, tmp_path):
+def test_execute_proposal_invalida_nao_chama_gateway(monkeypatch, capsys, tmp_path):
+    """(d) proposal sem stop_loss → invalid_proposal local; gateway NÃO é chamado."""
     _setup_env(monkeypatch)
     proposal_path = _write_proposal(tmp_path, _proposal_sem_stop())
-    rc = main(["execute", proposal_path], redis_client=redis_client, observability=obs)
+
+    # assert_all_called=False: registramos a rota só para poder checar call_count;
+    # o teste prova que ela NÃO foi chamada.
+    with respx.mock(base_url=GATEWAY_URL, assert_all_called=False) as mock:
+        execute_route = mock.post("/execute").mock(
+            return_value=httpx.Response(200, json={"executed": True})
+        )
+
+        with httpx.Client() as client:
+            rc = main(["execute", proposal_path], http_client=client)
+
     assert rc == 0
     out = json.loads(capsys.readouterr().out.strip())
     assert out["executed"] is False
     assert out["reason"] == "invalid_proposal"
-    assert "detail" in out
-    # Nenhuma call HTTP (falhou antes de tocar o betrader).
-    assert respx_mock.calls.call_count == 0
+    assert execute_route.call_count == 0
 
 
-# --- Rollback do client propaga como errors[]; estado ainda persistido ---
-
-
-@respx.mock
-def test_rollback_vira_errors_com_estado_persistido(
-    respx_mock, monkeypatch, redis_client, obs, capsys, tmp_path
-):
+def test_auth_header_enviado_no_brief_e_execute(monkeypatch, capsys, tmp_path):
+    """(e) cliente envia 'Authorization: Bearer <GATEWAY_TOKEN>' em /brief e /execute."""
     _setup_env(monkeypatch)
-    _mock_brief_endpoints(respx_mock)
-    respx_mock.get(f"{BASE_URL}/api/users").mock(
-        return_value=httpx.Response(200, json=_users_payload(is_testnet=True))
-    )
-    respx_mock.put(f"{BASE_URL}/api/futures/BTCUSDT").mock(
-        return_value=httpx.Response(200, json=[{"leverage": 3}])
-    )
-    # Entrada OK, stop falha (500) → rollback via DELETE → entry_rolled_back_no_stop.
-    respx_mock.post(f"{BASE_URL}/api/orders").mock(
-        side_effect=[
-            httpx.Response(200, json={"orderId": 111, "status": "FILLED"}),
-            httpx.Response(500, text="stop error"),
-        ]
-    )
-    close_route = respx_mock.delete(f"{BASE_URL}/api/futures/BTCUSDT").mock(
-        return_value=httpx.Response(200, json={"orderId": 333, "status": "FILLED"})
-    )
+    proposal_path = _write_proposal(tmp_path, _proposal_payload())
 
-    _run_brief(redis_client, obs, capsys)
-    proposal_path = _write_proposal(tmp_path, _proposal_aprovada())
-    rc = main(["execute", proposal_path], redis_client=redis_client, observability=obs)
+    with respx.mock(base_url=GATEWAY_URL) as mock:
+        brief_route = mock.post("/brief").mock(
+            return_value=httpx.Response(200, json=_brief_payload())
+        )
+        execute_route = mock.post("/execute").mock(
+            return_value=httpx.Response(200, json={"executed": True, "orders": [], "automations": [], "errors": []})
+        )
+
+        with httpx.Client() as client:
+            main(["brief"], http_client=client)
+            capsys.readouterr()  # descarta stdout do brief
+            main(["execute", proposal_path], http_client=client)
+
+    expected_auth = f"Bearer {GATEWAY_TOKEN}"
+    assert brief_route.calls[0].request.headers["Authorization"] == expected_auth
+    assert execute_route.calls[0].request.headers["Authorization"] == expected_auth
+
+
+def test_execute_gateway_502_vira_gateway_error(monkeypatch, capsys, tmp_path):
+    """(f) /execute responde 502 → cliente imprime {"executed":false,"reason":"gateway_error"}."""
+    _setup_env(monkeypatch)
+    proposal_path = _write_proposal(tmp_path, _proposal_payload())
+
+    with respx.mock(base_url=GATEWAY_URL) as mock:
+        mock.post("/execute").mock(return_value=httpx.Response(502, text="bad gateway"))
+
+        with httpx.Client() as client:
+            rc = main(["execute", proposal_path], http_client=client)
+
     assert rc == 0
     out = json.loads(capsys.readouterr().out.strip())
-
-    assert out["executed"] is True  # ciclo completou; a entry específica falhou
-    assert out["orders"] == []  # entry não confirmou
-    assert "entry_rolled_back_no_stop" in out["errors"]
-    assert close_route.called  # rollback executado
-    # Estado persistido apesar do erro da entry (integridade bot.md).
-    assert redis_client.get("binance:strategist:financial_state") is not None
+    assert out["executed"] is False
+    assert out["reason"] == "gateway_error"
+    assert "detail" in out

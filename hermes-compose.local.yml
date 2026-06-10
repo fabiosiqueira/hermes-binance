@@ -1,18 +1,59 @@
 # scaffold binance-project provando reuso do engine Hermes publicado
-# Portas: 8644 (gateway) / 6381 (redis) / 9468 (metrics) / 9121 (dashboard)
+# Portas: 8644 (gateway) / 6381 (redis) / 9121 (dashboard)
 #         8645 (webhook-shim — sidecar, publicado via netns do gateway)
+#         8647 (risk-gateway API) / 9468 (metrics — risk-gateway)
+#         6382 (risk-redis — estado privado do risk-gateway)
 #         Não colidem com defi-project  (8642/9119/9466/6379)
 #                          nem forex-project (8643/9120/9467/6380)
 #
 # Nota: o engine expõe o gateway internamente em :8644 (porta configurável).
 # Mapeamento same:same para simplificar debugging local.
 # Webhook nativo do engine (:8646) é loopback-only — NÃO exposto no host.
+#
+# Env local (F2): hermes/.env é o env COMPLETO (risk-gateway, webhook-shim).
+# O serviço do agente (gateway) usa hermes/.env.agent = .env SEM
+# BETRADER_TOKEN/BETRADER_BASE_URL — o token de trading NUNCA entra no
+# container do agente. Não há .env na raiz: interpolação ${VAR} em
+# `environment:` resolveria vazio e SOBRESCREVERIA o env_file — por isso os
+# segredos vêm só de env_file.
+#
+# Rede `risk`: isola o risk-redis (brief cache, financial_state, decisions)
+# do agente — só o risk-gateway alcança. Brief/estado inforjáveis pelo agente.
 
 networks:
   binance:
     driver: bridge
+  risk:
+    driver: bridge
 
 services:
+  risk-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: local
+    command: ["sh", "-c", "python scripts/risk_gateway.py"]
+    working_dir: /opt/data
+    depends_on:
+      - risk-redis
+    ports:
+      - "8647:8647"
+      - "9468:9468"
+    volumes:
+      - ./hermes:/opt/data
+    # Segredos e parâmetros (BETRADER_*, GATEWAY_TOKEN, EXECUTION_MODE, SYMBOL,
+    # TIMEFRAME, INITIAL_EQUITY, EMERGENCY_STOP, BRIEF_CACHE_TTL_SECONDS,
+    # WEBHOOK_PUBLIC_URL, BETRADER_WEBHOOK_SECRET) vêm SÓ do env_file.
+    environment:
+      HERMES_DATA_DIR: /opt/data
+      REDIS_HOST: risk-redis
+      REDIS_PORT: "6379"
+    env_file:
+      - hermes/.env
+    networks:
+      - binance
+      - risk
+
   gateway:
     build:
       context: .
@@ -24,10 +65,10 @@ services:
     command: ["gateway", "run"]
     depends_on:
       - redis
+      - risk-gateway
     ports:
       - "8644:8644"
       - "8645:8645"
-      - "9468:9468"
     volumes:
       - ./hermes:/opt/data
     environment:
@@ -36,9 +77,12 @@ services:
       REDIS_PORT: "6379"
       WEBHOOK_ENABLED: "true"
       WEBHOOK_PORT: "8646"
-      WEBHOOK_SECRET: ${BETRADER_WEBHOOK_SECRET}
+      GATEWAY_URL: "http://risk-gateway:8647"
+    # .env.agent = hermes/.env sem BETRADER_TOKEN/BETRADER_BASE_URL (invariante
+    # F2: o agente não detém o token de trading). Supre GATEWAY_TOKEN,
+    # WEBHOOK_SECRET, LLM keys e Telegram.
     env_file:
-      - hermes/.env
+      - hermes/.env.agent
     networks:
       - binance
 
@@ -57,7 +101,7 @@ services:
     environment:
       HERMES_DATA_DIR: /opt/data
     env_file:
-      - hermes/.env
+      - hermes/.env.agent
     depends_on:
       - gateway
 
@@ -84,5 +128,23 @@ services:
       timeout: 3s
       retries: 5
 
+  # Redis PRIVADO do risk-gateway (rede `risk`, fora do alcance do agente):
+  # brief cache, financial_state e stream de decisões. Debug: redis-cli -p 6382.
+  risk-redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6382:6379"
+    volumes:
+      - binance-risk-redis-data:/data
+    networks:
+      - risk
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 volumes:
   binance-redis-data:
+  binance-risk-redis-data:

@@ -6,9 +6,8 @@
 #
 # Fronteiras mockadas: HTTP betrader via respx, Redis via fakeredis, env via monkeypatch.
 # DI real em todos os módulos internos (risk_engine, schemas, observability).
-# Asserts: comportamento observável (JSON stdout, calls respx, valores fakeredis, gauges).
+# Asserts: comportamento observável (dict retornado, calls respx, valores fakeredis, gauges).
 import json
-import math
 
 import fakeredis
 import httpx
@@ -16,7 +15,8 @@ import pytest
 import respx
 
 from observability import FinancialState, Observability
-from strategist_cycle import main
+from schemas import ExecutionMode, StrategyProposal
+from risk_gateway import handle_brief, handle_execute
 
 BASE_URL = "https://betrader.example.test"
 TOKEN = "bht_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd"
@@ -194,16 +194,27 @@ def _setup_env(monkeypatch) -> None:
     monkeypatch.delenv("EMERGENCY_STOP", raising=False)
 
 
-def _write_proposal(tmp_path, payload: dict) -> str:
-    path = tmp_path / "proposal.json"
-    path.write_text(json.dumps(payload), encoding="utf-8")
-    return str(path)
+def _run_brief(redis_client, obs) -> dict:
+    """Chama handle_brief diretamente e retorna o dict do brief."""
+    return handle_brief(
+        symbol="BTCUSDT",
+        timeframe="15m",
+        mode=ExecutionMode.DRY_RUN,
+        redis_client=redis_client,
+        observability=obs,
+    )
 
 
-def _run_brief(redis_client, obs, capsys) -> str:
-    rc = main(["brief"], redis_client=redis_client, observability=obs)
-    assert rc == 0
-    return capsys.readouterr().out.strip()
+def _run_execute(redis_client, obs, payload: dict) -> dict:
+    """Valida a proposta e chama handle_execute diretamente; retorna o dict de resultado."""
+    proposal = StrategyProposal.model_validate(payload)
+    symbol = proposal.entries[0].symbol if proposal.entries else "BTCUSDT"
+    return handle_execute(
+        proposal=proposal,
+        symbol=symbol,
+        redis_client=redis_client,
+        observability=obs,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -217,19 +228,13 @@ def redis_lc():
     return fakeredis.FakeStrictRedis(decode_responses=True)
 
 
-@pytest.fixture(autouse=True)
-def _chdir_tmp(tmp_path, monkeypatch):
-    """Isola workspace/ no tmp_path de cada teste."""
-    monkeypatch.chdir(tmp_path)
-
-
 # ---------------------------------------------------------------------------
 # Teste principal: lifecycle completo DRY_RUN
 # ---------------------------------------------------------------------------
 
 
 @respx.mock
-def test_lifecycle_dry_run_completo(respx_mock, monkeypatch, redis_lc, capsys, tmp_path):
+def test_lifecycle_dry_run_completo(respx_mock, monkeypatch, redis_lc):
     """Narrativa: dias de operação em DRY_RUN.
 
     Ciclo 1: brief (sem posição) → entrada BTCUSDT aprovada → entry+stop emitidos.
@@ -261,13 +266,13 @@ def test_lifecycle_dry_run_completo(respx_mock, monkeypatch, redis_lc, capsys, t
     )
 
     obs_c1 = Observability()
-    brief_path = _run_brief(redis_lc, obs_c1, capsys)
-    assert brief_path.endswith("workspace/brief.json")
+    brief_c1 = _run_brief(redis_lc, obs_c1)
 
-    proposal_c1 = _write_proposal(tmp_path, _proposal_entrada_btc())
-    rc = main(["execute", proposal_c1], redis_client=redis_lc, observability=obs_c1)
-    assert rc == 0
-    out_c1 = json.loads(capsys.readouterr().out.strip())
+    # brief retorna o dict com as chaves esperadas.
+    assert brief_c1["mode"] == "DRY_RUN", "Ciclo 1: brief mode correto"
+    assert brief_c1["market"]["symbol"] == "BTCUSDT", "Ciclo 1: brief symbol correto"
+
+    out_c1 = _run_execute(redis_lc, obs_c1, _proposal_entrada_btc())
 
     # --- Asserts Ciclo 1 ---
     assert out_c1["executed"] is True, "Ciclo 1: execução deve ter sido confirmada"
@@ -320,13 +325,21 @@ def test_lifecycle_dry_run_completo(respx_mock, monkeypatch, redis_lc, capsys, t
     )
 
     obs_c2 = Observability()
-    brief_path_c2 = _run_brief(redis_lc, obs_c2, capsys)
-    assert brief_path_c2.endswith("workspace/brief.json")
+    brief_c2 = _run_brief(redis_lc, obs_c2)
 
-    proposal_c2 = _write_proposal(tmp_path, _proposal_gestao_trailing())
-    rc = main(["execute", proposal_c2], redis_client=redis_lc, observability=obs_c2)
-    assert rc == 0
-    out_c2 = json.loads(capsys.readouterr().out.strip())
+    # Brief do Ciclo 2 reflete posição aberta: valida via dict retornado e via Redis.
+    assert len(brief_c2["portfolio"]["positions"]) == 1, (
+        "Ciclo 2: brief deve refletir posição aberta"
+    )
+    assert brief_c2["portfolio"]["positions"][0]["symbol"] == "BTCUSDT"
+
+    # Validação adicional via Redis (chave de cache do brief).
+    brief_cached = json.loads(redis_lc.get("binance:strategist:brief:BTCUSDT"))
+    assert len(brief_cached["portfolio"]["positions"]) == 1, (
+        "Ciclo 2: brief cacheado no Redis deve refletir posição aberta"
+    )
+
+    out_c2 = _run_execute(redis_lc, obs_c2, _proposal_gestao_trailing())
 
     # --- Asserts Ciclo 2 ---
     assert out_c2["executed"] is True, "Ciclo 2: execução confirmada"
@@ -335,14 +348,6 @@ def test_lifecycle_dry_run_completo(respx_mock, monkeypatch, redis_lc, capsys, t
     assert "auto-42" in out_c2["automations"], "Ciclo 2: automation instalada com id correto"
     assert automation_post.called, "Ciclo 2: POST /api/automations chamado"
     assert automation_start.called, "Ciclo 2: POST .../start chamado"
-
-    # Brief reflete posição aberta: valida que o brief.json foi lido com posição.
-    import json as _json
-    brief_data = _json.loads((tmp_path / "workspace" / "brief.json").read_text())
-    assert len(brief_data["portfolio"]["positions"]) == 1, (
-        "Ciclo 2: brief deve refletir posição aberta"
-    )
-    assert brief_data["portfolio"]["positions"][0]["symbol"] == "BTCUSDT"
 
     # Stream cresceu em 1 decisão.
     assert redis_lc.xlen("binance:strategist:decisions") == 2, (
@@ -380,11 +385,8 @@ def test_lifecycle_dry_run_completo(respx_mock, monkeypatch, redis_lc, capsys, t
     _mock_brief_endpoints(respx_mock, com_posicao=False)
 
     obs_c3 = Observability()
-    _run_brief(redis_lc, obs_c3, capsys)
-    proposal_c3 = _write_proposal(tmp_path, _proposal_sem_acao())
-    rc = main(["execute", proposal_c3], redis_client=redis_lc, observability=obs_c3)
-    assert rc == 0
-    out_c3 = json.loads(capsys.readouterr().out.strip())
+    _run_brief(redis_lc, obs_c3)
+    out_c3 = _run_execute(redis_lc, obs_c3, _proposal_sem_acao())
     assert out_c3["executed"] is True, "Ciclo 3: ciclo sem ação executa com sucesso"
     assert out_c3["orders"] == [], "Ciclo 3: sem ordens (proposta vazia)"
 
@@ -479,14 +481,14 @@ def test_lifecycle_dry_run_completo(respx_mock, monkeypatch, redis_lc, capsys, t
 
 
 @respx.mock
-def test_kill_switch_emergency_stop(respx_mock, monkeypatch, redis_lc, capsys, tmp_path):
-    """EMERGENCY_STOP=true → execute retorna {executed:false, reason:emergency_stop}
-    sem NENHUMA call HTTP de escrita (nem leitura de proposta completa, conforme spec).
+def test_kill_switch_emergency_stop(respx_mock, monkeypatch, redis_lc):
+    """EMERGENCY_STOP=true → handle_execute retorna {executed:false, reason:emergency_stop}
+    sem NENHUMA call HTTP (kill switch é verificado antes de qualquer I/O).
     """
     _setup_env(monkeypatch)
     monkeypatch.setenv("EMERGENCY_STOP", "true")
 
-    # Registra rotas de escrita para provar que NÃO são chamadas.
+    # Registra rotas para provar que NÃO são chamadas.
     users_route = respx_mock.get(f"{BASE_URL}/api/users").mock(
         return_value=httpx.Response(200, json=_users_payload())
     )
@@ -501,16 +503,19 @@ def test_kill_switch_emergency_stop(respx_mock, monkeypatch, redis_lc, capsys, t
     )
 
     obs = Observability()
-    proposal_path = _write_proposal(tmp_path, _proposal_entrada_btc())
-    rc = main(["execute", proposal_path], redis_client=redis_lc, observability=obs)
-    assert rc == 0
-
-    out = json.loads(capsys.readouterr().out.strip())
-    assert out == {"executed": False, "reason": "emergency_stop"}, (
-        "Kill switch: JSON exato {executed:false, reason:emergency_stop}"
+    proposal = StrategyProposal.model_validate(_proposal_entrada_btc())
+    out = handle_execute(
+        proposal=proposal,
+        symbol="BTCUSDT",
+        redis_client=redis_lc,
+        observability=obs,
     )
 
-    # Nenhuma call HTTP de escrita executada.
+    assert out == {"executed": False, "reason": "emergency_stop"}, (
+        "Kill switch: dict exato {executed:false, reason:emergency_stop}"
+    )
+
+    # Nenhuma call HTTP executada.
     assert not users_route.called, "Kill switch: GET /api/users não deve ser chamado"
     assert not put_route.called, "Kill switch: PUT /api/futures não deve ser chamado"
     assert not post_orders.called, "Kill switch: POST /api/orders não deve ser chamado"
