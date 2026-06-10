@@ -54,6 +54,12 @@ services:
       GATEWAY_TOKEN: ${GATEWAY_TOKEN}
       WEBHOOK_PUBLIC_URL: ${WEBHOOK_PUBLIC_URL}
       BETRADER_WEBHOOK_SECRET: ${BETRADER_WEBHOOK_SECRET}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8647/health', timeout=3).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     # SEM volume: scripts/ e dogmas.yaml vêm baked da imagem (target vps).
     # Estado financeiro/brief vivem no risk-redis — nada a persistir em disco.
     networks:
@@ -109,6 +115,13 @@ services:
       - traefik.http.routers.binance-hook.tls.certresolver=letsencrypt
       - traefik.http.routers.binance-hook.service=binance-hook
       - traefik.http.services.binance-hook.loadbalancer.server.port=8645
+    # Liveness do engine: webhook nativo loopback-only :8646 (WEBHOOK_ENABLED=true).
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8646), 3).close()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   # Webhook shim (F1): recebe POST do betrader/drawdown-wake na :8645 (/hook/betrader),
   # verifica X-Beholder-Signature e re-assina pro esquema Generic do engine nativo
@@ -127,6 +140,13 @@ services:
       BETRADER_WEBHOOK_SECRET: ${BETRADER_WEBHOOK_SECRET}
     depends_on:
       - gateway
+    # Liveness do shim: porta pública :8645 no netns do gateway (GET dá 405, mas prova vivo).
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8645), 3).close()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   redis:
     image: redis:7-alpine
