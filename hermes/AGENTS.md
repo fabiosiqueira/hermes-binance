@@ -28,6 +28,7 @@ Data dir / home do Hermes Agent para o projeto Binance Futures (`fabiosiqueira/h
   ```
 - Uso típico: estado financeiro persistido, cache de brief/proposal, coordenação entre scripts.
 - Porta exposta no host: 6381 (para debug manual via `redis-cli -p 6381`).
+- **`risk-redis` é outro Redis, PRIVADO do Risk Gateway** (rede `risk`: brief cache, `financial_state`, stream de decisões). Está **fora do meu alcance** por design — não tento conectar nele. (Debug do operador: `redis-cli -p 6382`.)
 
 ### betrader-hydra (executor)
 - API REST do betrader, acessada **exclusivamente** pelo serviço **Risk Gateway** (`risk-gateway`) — container separado que detém `BETRADER_TOKEN` e `BETRADER_BASE_URL`. O agente (HAWK) **não tem BETRADER_TOKEN** e nunca chama o betrader diretamente.
@@ -46,15 +47,16 @@ Data dir / home do Hermes Agent para o projeto Binance Futures (`fabiosiqueira/h
   - `risk_gateway.py` — **serviço Risk Gateway** (F2): detém o token, aplica os Dogmas, cacheia o brief no Redis, executa no betrader. Roda no container `risk-gateway` separado; o agente não o chama diretamente.
   - `strategist_cycle.py` — **thin-client HTTP** do ciclo: envia brief/proposal ao Risk Gateway via HTTP. Mesma CLI (`brief|execute`), mesmo contrato de stdout — mas não detém token nem enforça regras.
   - `observability.py` — métricas Prometheus, estado financeiro persistido.
+  - `webhook_shim.py` — **sidecar de webhook (F1)**: recebe o POST inbound do betrader (porta `8645`), re-assina e encaminha pro webhook nativo do engine em `127.0.0.1:8646`. Roda junto do `gateway` (netns compartilhado); não o invoco diretamente.
 - `memories/MEMORY.md` (≤2200 chars) e `memories/USER.md` (≤1375) — working set congelado no system prompt (ensinamentos de alto nível, preferências, estado atual relevante).
 - `memory/hermes_memory.db` — long-term store persistente (provider `local_sqlite`, FTS5). Guardo ensinamentos do Fábio, histórico de proposals/execuções, decisões, lições.
 - `workspace/` — área de trabalho para arquivos temporários gerados pelo ciclo (ex.: `brief.json`, `proposal.json`). Não versionado.
-- `plans/`, `cron/` — tarefas agendadas (cron de 15m) e planos.
+- `cron/` — jobs agendados (`jobs.json`, ex.: `strategist-candle-15m` em `*/15`). `plans/` — planos (preenchido em runtime).
 - `.env` (no data dir) — secrets compartilhados (ex.: `EXECUTION_MODE`, `GATEWAY_TOKEN`, `BETRADER_TOKEN`/`BETRADER_BASE_URL` — estes dois usados **só** pelo serviço `risk-gateway`). **Nunca** versionado; injetado via env_file no compose.
 
-## Ciclo do estrategista (cron 15m)
+## Ciclo do estrategista (cron)
 
-O cron dispara no fechamento de cada candle de 15m do BTCUSDT. O contrato é:
+O cron (`cron/jobs.json`, job `strategist-candle-15m`, expr `*/15 * * * *`) dispara a cada fechamento de candle. O par e o timeframe vêm do ambiente — `SYMBOL` (default `BTCUSDT`) e `TIMEFRAME` (default `15m`), **não hardcoded**. O contrato é:
 
 **(a) Obter o brief:**
 ```
@@ -112,6 +114,8 @@ Leio o resultado e reporto no canal (Telegram) quando relevante — especialment
 
 Além do cron de 15m, o betrader pode me **acordar via webhook** quando uma automation-sentinela que eu mesmo armei dispara. Recebo um prompt com o payload do evento e devo rodar o **mesmo ciclo** (brief → proposal → execute) para re-decidir a estratégia — não para executar uma ordem diretamente.
 
+A rota está wireada em `config.yaml` → `platforms.webhook` (porta `8646`, route `strategist-event`): o prompt do evento já instrui exatamente os 4 passos (`brief` → reavaliar/escrever `proposal.json` → `execute` → reportar no canal). O payload bruto chega como `{__raw__}`.
+
 **Como armar sentinelas:**
 Incluo uma ou mais `AutomationSpec` no campo `StrategyProposal.automations` com `action: {"type": "WEBHOOK"}`. A infra injeta `webhookUrl` e `webhookSecret` automaticamente — **eu nunca escrevo nem leio o secret**. Exemplo:
 
@@ -141,9 +145,14 @@ Drawdown do meu equity-curve **não é visível ao betrader** — esse alerta ve
 | `GATEWAY_URL`      | compose (agente)       | URL do Risk Gateway (ex.: `http://risk-gateway:8647`). Env do container do agente. |
 | `GATEWAY_TOKEN`    | .env (gitignored)      | Token de autenticação do agente no Risk Gateway (`gwt_…`). **Nunca expor.** |
 | `EXECUTION_MODE`   | .env / compose         | `DRY_RUN` (default, testnet), `HOM`, `PROD`. |
+| `SYMBOL`           | .env / compose         | Par operado (default `BTCUSDT`). Define o brief/ciclo. |
+| `TIMEFRAME`        | .env / compose         | Timeframe do candle/cron (default `15m`). |
+| `EMERGENCY_STOP`   | .env / compose         | Kill switch (`true`/`false`). Enforçado no Risk Gateway — proposta recusada com `reason: emergency_stop`. |
+| `INITIAL_EQUITY`   | .env / compose         | Equity base da equity-curve (MaxDD/PnL). Usado pelo gateway/observability. |
 | `HERMES_DATA_DIR`  | compose (agente)       | Raiz do data dir (`/opt/data`). |
 | `BETRADER_BASE_URL`| .env — **risk-gateway**| URL base do betrader. Pertence ao serviço `risk-gateway`; o agente não usa. |
 | `BETRADER_TOKEN`   | .env — **risk-gateway**| Bearer token `bht_…`. Pertence ao serviço `risk-gateway`. **Nunca expor; o agente não tem acesso.** |
+| `WEBHOOK_SECRET` / `BETRADER_WEBHOOK_SECRET` | .env — gateway/shim | Segredos do webhook F1 (assinatura). Infra de I/O; **eu nunca os leio nem escrevo.** |
 
 Outras (provider keys, etc.) vêm de `.env` — nunca hardcode.
 
