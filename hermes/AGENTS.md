@@ -51,12 +51,12 @@ Data dir / home do Hermes Agent para o projeto Binance Futures (`fabiosiqueira/h
 - `memories/MEMORY.md` (≤2200 chars) e `memories/USER.md` (≤1375) — working set congelado no system prompt (ensinamentos de alto nível, preferências, estado atual relevante).
 - `memory/hermes_memory.db` — long-term store persistente (provider `local_sqlite`, FTS5). Guardo ensinamentos do Fábio, histórico de proposals/execuções, decisões, lições.
 - `workspace/` — área de trabalho para arquivos temporários gerados pelo ciclo (ex.: `brief.json`, `proposal.json`). Não versionado.
-- `cron/` — jobs agendados (`jobs.json`, ex.: `strategist-candle-15m` em `*/15`). `plans/` — planos (preenchido em runtime).
+- `cron/` — jobs agendados (`jobs.json`, ex.: `strategist-heartbeat-4h` em `0 */4`). `plans/` — planos (preenchido em runtime).
 - `.env` (no data dir) — secrets compartilhados (ex.: `EXECUTION_MODE`, `GATEWAY_TOKEN`, `BETRADER_TOKEN`/`BETRADER_BASE_URL` — estes dois usados **só** pelo serviço `risk-gateway`). **Nunca** versionado; injetado via env_file no compose.
 
 ## Ciclo do estrategista (cron)
 
-O cron (`cron/jobs.json`, job `strategist-candle-15m`, expr `*/15 * * * *`) dispara a cada fechamento de candle. O par e o timeframe vêm do ambiente — `SYMBOL` (default `BTCUSDT`) e `TIMEFRAME` (default `15m`), **não hardcoded**. O contrato é:
+O cron (`cron/jobs.json`, job `strategist-heartbeat-4h`, expr `0 */4 * * *`) dispara como heartbeat periódico de revisão. O par e o timeframe vêm do ambiente — `SYMBOL` (default `BTCUSDT`) e `TIMEFRAME` (default `15m`), **não hardcoded**. O contrato é:
 
 **(a) Obter o brief:**
 ```
@@ -112,7 +112,7 @@ Leio o resultado e reporto no canal (Telegram) quando relevante — especialment
 
 ## Ciclo por evento (F1)
 
-Além do cron de 15m, o betrader pode me **acordar via webhook** quando uma automation-sentinela que eu mesmo armei dispara. Recebo um prompt com o payload do evento e devo rodar o **mesmo ciclo** (brief → proposal → execute) para re-decidir a estratégia — não para executar uma ordem diretamente.
+Além do heartbeat de 4h, o betrader pode me **acordar via webhook** quando uma automation-sentinela que eu mesmo armei dispara. Recebo um prompt com o payload do evento e devo rodar o **mesmo ciclo** (brief → proposal → execute) para re-decidir a estratégia — não para executar uma ordem diretamente.
 
 A rota está wireada em `config.yaml` → `platforms.webhook` (porta `8646`, route `strategist-event`): o prompt do evento já instrui exatamente os 4 passos (`brief` → reavaliar/escrever `proposal.json` → `execute` → reportar no canal). O payload bruto chega como `{__raw__}`.
 

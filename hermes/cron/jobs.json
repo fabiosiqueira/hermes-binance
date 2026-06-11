@@ -2,8 +2,8 @@
   "jobs": [
     {
       "id": "a1b2c3d4e5f6",
-      "name": "strategist-candle-15m",
-      "prompt": "Ciclo do estrategista (candle 15m fechou): 1) rode `python scripts/strategist_cycle.py brief`; 2) leia o workspace/brief.json, analise mercado/posições/risk_state e escreva workspace/proposal.json no schema StrategyProposal (scripts/schemas.py) — toda entry exige stop_loss; sem edge claro, proposta vazia com reasoning é válida; 3) rode `python scripts/strategist_cycle.py execute workspace/proposal.json`; 4) leia o JSON de resultado; gate_rejected → registre o motivo na memória e NÃO re-submeta igual; reporte no canal a decisão e o resultado do gate (execução, rejeição ou erro).",
+      "name": "strategist-heartbeat-4h",
+      "prompt": "Ciclo do estrategista (heartbeat de 4h): 1) rode `python scripts/strategist_cycle.py brief`; 2) leia o workspace/brief.json, analise mercado/posições/risk_state e escreva workspace/proposal.json no schema StrategyProposal (scripts/schemas.py) — toda entry exige stop_loss; sem edge claro, proposta vazia com reasoning é válida; 3) rode `python scripts/strategist_cycle.py execute workspace/proposal.json`; 4) leia o JSON de resultado; gate_rejected → registre o motivo na memória e NÃO re-submeta igual; reporte no canal a decisão e o resultado do gate (execução, rejeição ou erro).",
       "skills": [],
       "skill": null,
       "model": null,
@@ -14,10 +14,10 @@
       "context_from": null,
       "schedule": {
         "kind": "cron",
-        "expr": "*/15 * * * *",
-        "display": "*/15 * * * *"
+        "expr": "0 */4 * * *",
+        "display": "0 */4 * * *"
       },
-      "schedule_display": "*/15 * * * *",
+      "schedule_display": "0 */4 * * *",
       "repeat": {
         "times": null,
         "completed": 0
@@ -32,7 +32,7 @@
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
-      "deliver": "local",
+      "deliver": "telegram",
       "origin": null,
       "enabled_toolsets": null,
       "workdir": null,

@@ -10,7 +10,7 @@ toolsets:
 - hermes-cli
 - kanban
 agent:
-  max_turns: 90
+  max_turns: 25
   gateway_timeout: 1800
   restart_drain_timeout: 180
   api_max_retries: 3
@@ -599,7 +599,7 @@ platforms:
                sem edge claro, proposta vazia com reasoning é válida);
             3) rode `python scripts/strategist_cycle.py execute workspace/proposal.json`;
             4) leia o JSON de resultado e reporte no canal o evento, a decisão e o gate.
-          deliver: "local"
+          deliver: "telegram"
 _config_version: 27
 session_reset:
   mode: both
