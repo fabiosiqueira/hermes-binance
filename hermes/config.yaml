@@ -593,12 +593,12 @@ platforms:
             Evento severo recebido do betrader (sentinela disparou). Payload:
             {__raw__}
             RE-DECIDA a estratégia à luz do evento (não a ordem):
-            1) rode `python scripts/strategist_cycle.py brief`;
-            2) leia workspace/brief.json, reavalie posição/risco/risk_state e escreva
-               workspace/proposal.json no schema StrategyProposal (toda entry exige stop_loss;
-               sem edge claro, proposta vazia com reasoning é válida);
-            3) rode `python scripts/strategist_cycle.py execute workspace/proposal.json`;
-            4) leia o JSON de resultado e reporte no canal o evento, a decisão e o gate.
+            1) rode `python scripts/strategist_cycle.py brief` (gateway + analyzer populam Redis: brief em binance:strategist:brief:<SYMBOL>, sinais em binance:strategist:mulham:<SYMBOL> via REDIS_* env);
+            2) leia brief + mulham do Redis (redis-first). Use sinais como fatos determinísticos;
+            3) se material_change=false, produza proposal mínima;
+            4) gere StrategyProposal (dict) e SET no Redis sob `binance:strategist:proposal:<SYMBOL>` (TTL 300s). O arquivo workspace/proposal.json é opcional para inspeção;
+            5) rode `python scripts/strategist_cycle.py execute redis:binance:strategist:proposal:<SYMBOL>`;
+            6) leia o JSON de resultado e reporte no canal o evento, a decisão e o gate.
           deliver: "telegram"
 _config_version: 27
 session_reset:

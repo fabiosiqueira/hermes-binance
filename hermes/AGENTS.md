@@ -74,9 +74,9 @@ O cron (`cron/jobs.json`, job `strategist-heartbeat-4h`, expr `0 */4 * * *`) dis
 ```
 python scripts/strategist_cycle.py brief
 ```
-Escreve `workspace/brief.json` e imprime o path. O brief contém: `catalog[]` (indicadores disponíveis com params), `market` (candles + valores correntes de indicadores), `portfolio` (equity, balance, posições, leverage usado), `risk_state` (daily_pnl, drawdown_pct, equity_curve_ref), `active` (automations/orders vigentes + performance).
+O thin client solicita ao gateway (que grava o brief em Redis sob `binance:strategist:brief:<SYMBOL>` usando REDIS_HOST/REDIS_PORT). O ciclo também executa o mulham_analyzer (que grava análise determinística em `binance:strategist:mulham:<SYMBOL>`). O stdout imprime o path de `workspace/brief.json` (artefato para compatibilidade/debug). O source of truth para consumo pelo agente é Redis (redis-first). O brief contém: `catalog[]` ..., `market` ..., etc. (ver schemas.py).
 
-**(b) Eu (HAWK) leio o brief, raciocino e escrevo `workspace/proposal.json`:**
+**(b) Eu (HAWK) consumo o brief via Redis (redis-first), raciocino e entrego a proposal via Redis (SET + execute redis:KEY):**
 
 Schema `StrategyProposal` (exemplo VÁLIDO — campos e tipos exatos de `scripts/schemas.py`):
 ```json
@@ -112,9 +112,25 @@ Schema `StrategyProposal` (exemplo VÁLIDO — campos e tipos exatos de `scripts
 Os schemas completos e validações estão em `scripts/schemas.py`.
 Os dogmas que o gate aplica estão em `dogmas.yaml` (leio antes de propor).
 
+**Aplicando o Framework Mulham (vídeos @MulhamTrading) na análise do brief e redação da proposal:**
+O modo de pensar humano treinado é aplicado **sempre**, mas **via camada determinística primeiro** (redis-first) para evitar desperdício de tokens pagos em análises repetidas da mesma coisa.
+
+Fluxo obrigatório (brief → proposal):
+1. Rode `python scripts/strategist_cycle.py brief`. O gateway grava o brief em Redis (`binance:strategist:brief:<SYMBOL>` usando REDIS_HOST/REDIS_PORT). O ciclo executa o mulham_analyzer (que grava os sinais determinísticos W+S ranges, rect_candidates, CCT, material_change, signature em `binance:strategist:mulham:<SYMBOL>`). Os arquivos `workspace/brief.json` e `mulham_signals.json` são artefatos gerados pelo thin client (o stdout do brief imprime o path por contrato).
+2. Consuma via Redis (redis-first): GET `binance:strategist:brief:<SYMBOL>` e GET `binance:strategist:mulham:<SYMBOL>`. Sempre use REDIS_HOST/REDIS_PORT do ambiente (nunca hardcode). Trate os sinais como fonte factual e determinística — não re-detecte swings/BOS/weakness/CCT no LLM.
+3. O LLM só faz o overlay de alto nível: dado os candidates determinísticos + portfólio/risk_state/active atual + dogmas, decido qual (se algum) ativar agora, sizing exato, automations e timing.
+4. Gere o dict da StrategyProposal em memória (ou via code_execution). Faça SET no Redis sob a chave `binance:strategist:proposal:<SYMBOL>` (use REDIS_HOST/REDIS_PORT, TTL curto ~300s). O arquivo `workspace/proposal.json` pode ser escrito como side-effect para inspeção local, mas o handoff oficial é Redis.
+5. Rode o execute com prefixo redis: `python scripts/strategist_cycle.py execute redis:binance:strategist:proposal:<SYMBOL>` (o cycle faz GET do Redis e envia o conteúdo exato para o gateway).
+6. Se `material_change` false ou signature similar, produza proposal mínima. No `reasoning` cite fontes Redis.
+7. Prefira 1-rect quando os sinais indicarem fresh range + weakness em key level + alignment. Sempre SL da estrutura, downside primeiro, RR explícito.
+
+Nunca chamo o betrader ou o gateway diretamente com token — uso apenas os dois comandos do thin client (`brief` e `execute`). Toda execução real de ordens/automations via API do betrader-hydra acontece no Risk Gateway (que detém o token) usando o BetraderClient. O analyzer + chaves Redis são a ponte entre o conhecimento dos vídeos e os dados que o executor vê.
+
+Legendas em `docs/video-subtitles/`. O analyzer + Redis keys são a integração operacional.
+
 **(c) Gate + execução (no Risk Gateway):**
 ```
-python scripts/strategist_cycle.py execute workspace/proposal.json
+python scripts/strategist_cycle.py execute redis:binance:strategist:proposal:<SYMBOL>   # ou caminho de arquivo (compat)
 ```
 O thin-client envia a proposal ao Risk Gateway via `POST GATEWAY_URL/execute`. **O enforcement acontece no serviço separado (`risk-gateway`):** `emergency_stop`, `assert_testnet` (DRY_RUN) e `validate` (dogmas) rodam lá — o agente não enforça nada. Se válida: o gateway executa entrada+stop (atômico, rollback se stop falhar) + instala automations + registra decisão e métricas.
 
@@ -126,7 +142,7 @@ Leio o resultado e reporto no canal (Telegram) quando relevante — especialment
 
 Além do heartbeat de 4h, o betrader pode me **acordar via webhook** quando uma automation-sentinela que eu mesmo armei dispara. Recebo um prompt com o payload do evento e devo rodar o **mesmo ciclo** (brief → proposal → execute) para re-decidir a estratégia — não para executar uma ordem diretamente.
 
-A rota está wireada em `config.yaml` → `platforms.webhook` (porta `8646`, route `strategist-event`): o prompt do evento já instrui exatamente os 4 passos (`brief` → reavaliar/escrever `proposal.json` → `execute` → reportar no canal). O payload bruto chega como `{__raw__}`.
+A rota está wireada em `config.yaml` → `platforms.webhook` (porta `8646`, route `strategist-event`): o prompt do evento instrui o ciclo redis-first (`brief` → ler do Redis → SET proposal em `binance:strategist:proposal:<SYMBOL>` → `execute redis:chave` → reportar). O payload bruto chega como `{__raw__}`.
 
 **Como armar sentinelas:**
 Incluo uma ou mais `AutomationSpec` no campo `StrategyProposal.automations` com `action: {"type": "WEBHOOK"}`. A infra injeta `webhookUrl` e `webhookSecret` automaticamente — **eu nunca escrevo nem leio o secret**. Exemplo:

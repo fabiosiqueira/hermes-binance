@@ -3,7 +3,7 @@
     {
       "id": "a1b2c3d4e5f6",
       "name": "strategist-heartbeat-4h",
-      "prompt": "Ciclo do estrategista (heartbeat de 4h): 1) rode `python scripts/strategist_cycle.py brief`; 2) leia o workspace/brief.json, analise mercado/posições/risk_state e escreva workspace/proposal.json no schema StrategyProposal (scripts/schemas.py) — toda entry exige stop_loss; sem edge claro, proposta vazia com reasoning é válida; 3) rode `python scripts/strategist_cycle.py execute workspace/proposal.json`; 4) leia o JSON de resultado; gate_rejected → registre o motivo na memória e NÃO re-submeta igual; reporte no canal a decisão e o resultado do gate (execução, rejeição ou erro).",
+      "prompt": "Ciclo do estrategista (heartbeat de 4h): 1) rode `python scripts/strategist_cycle.py brief` (gateway grava brief em Redis binance:strategist:brief:<SYMBOL>; analyzer grava sinais em binance:strategist:mulham:<SYMBOL> — use REDIS_* env); 2) leia brief + mulham_signals do Redis (redis-first). Use os sinais como fatos — não re-analise candles; 3) raciocine com Framework Mulham; 4) gere a StrategyProposal (dict válido) e faça SET no Redis sob chave `binance:strategist:proposal:<SYMBOL>` (TTL curto, ex 300s). NÃO dependa de escrever proposal.json como passo principal; 5) rode `python scripts/strategist_cycle.py execute redis:binance:strategist:proposal:<SYMBOL>` (o cycle suporta prefixo redis: e faz GET do Redis); 6) leia resultado; gate_rejected → registre motivo na memória e NÃO re-submeta; reporte no canal. Se material_change=false, faça proposal mínima.",
       "skills": [],
       "skill": null,
       "model": null,

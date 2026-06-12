@@ -94,6 +94,25 @@ def _cmd_brief(*, http_client: httpx.Client) -> int:
 
     _WORKSPACE.mkdir(parents=True, exist_ok=True)
     _BRIEF_PATH.write_text(resp.text, encoding="utf-8")
+
+    # Always run deterministic Mulham pre-analysis right after fetching the brief.
+    # This produces workspace/mulham_signals.json with W+S ranges, CCT bias,
+    # 1-rect candidates etc. The LLM is instructed (SOUL/AGENTS + cron/webhook prompts)
+    # to consume this as factual input BEFORE any expensive reasoning.
+    # Goal: move Mulham "chart reading" out of paid LLM turns and avoid re-analyzing
+    # near-identical market states on every 4h heartbeat or sentinel event.
+    try:
+        import subprocess
+        subprocess.run(
+            ["python", "scripts/mulham_analyzer.py", "--brief", str(_BRIEF_PATH), "--output", str(_WORKSPACE / "mulham_signals.json")],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except Exception:
+        pass  # analyzer is best-effort; LLM still has the raw brief if it fails
+
     print(str(_BRIEF_PATH.resolve()))
     return 0
 
@@ -101,9 +120,12 @@ def _cmd_brief(*, http_client: httpx.Client) -> int:
 def _cmd_execute(proposal_path: str, *, http_client: httpx.Client) -> int:
     """Metade 2: envia proposta ao gateway e repassa o resultado.
 
-    Lê workspace/proposal.json, valida schema localmente (captura inválidos antes
-    de trafegar pela rede) e POST /execute ao gateway. Repassa o JSON da resposta
-    fielmente, sem qualquer reinterpretação de risco.
+    Aceita dois modos (para suportar redis-first):
+    - Caminho de arquivo (legado): lê workspace/proposal.json
+    - "redis:<key>": faz GET no Redis (usando REDIS_HOST/REDIS_PORT do env) e usa o conteúdo.
+
+    Valida schema localmente (só pydantic, sem dogmas) e POST /execute.
+    Repassa o corpo exato para o gateway.
     """
     config = _load_gateway_config()
     if config is None:
@@ -111,20 +133,35 @@ def _cmd_execute(proposal_path: str, *, http_client: httpx.Client) -> int:
 
     gateway_url, token = config
 
-    # Carrega e valida a proposta localmente (só schema, sem regras de risco).
+    # Carrega o conteúdo da proposta (arquivo ou Redis)
     try:
-        raw = Path(proposal_path).read_text(encoding="utf-8")
+        if proposal_path.startswith("redis:"):
+            import os
+            import redis
+            key = proposal_path[6:]
+            host = os.environ.get("REDIS_HOST", "redis")
+            port = int(os.environ.get("REDIS_PORT", "6379"))
+            r = redis.Redis(host=host, port=port, decode_responses=True)
+            raw = r.get(key)
+            if raw is None:
+                return _emit({"executed": False, "reason": "invalid_proposal", "detail": f"redis key not found: {key}"})
+            # raw já é str por causa de decode_responses
+        else:
+            raw = Path(proposal_path).read_text(encoding="utf-8")
+
         StrategyProposal.model_validate_json(raw)
     except ValidationError as exc:
         return _emit({"executed": False, "reason": "invalid_proposal", "detail": exc.errors()})
     except OSError as exc:
         return _emit({"executed": False, "reason": "invalid_proposal", "detail": str(exc)})
+    except Exception as exc:  # redis etc.
+        return _emit({"executed": False, "reason": "invalid_proposal", "detail": str(exc)})
 
-    # Envia ao gateway (corpo = raw JSON exato lido do arquivo).
+    # Envia ao gateway (corpo = raw exato)
     try:
         resp = http_client.post(
             f"{gateway_url}/execute",
-            content=raw.encode(),
+            content=raw.encode() if isinstance(raw, str) else raw,
             headers={
                 **_gateway_headers(token),
                 "Content-Type": "application/json",
