@@ -75,13 +75,13 @@ services:
     command: ["sh", "-c", "python /opt/data/scripts/gh_auth.py; exec hermes gateway run"]
     restart: unless-stopped
     depends_on:
-      redis:
+      binance-redis:
         condition: service_healthy
       risk-gateway:
         condition: service_started
     environment:
       HERMES_DATA_DIR: /opt/data
-      REDIS_HOST: redis
+      REDIS_HOST: binance-redis
       REDIS_PORT: "6379"
       # secrets (Coolify env tab)
       MINIMAX_API_KEY: ${MINIMAX_API_KEY}
@@ -149,7 +149,11 @@ services:
       retries: 5
       start_period: 60s
 
-  redis:
+  # Renomeado de `redis` p/ nome ÚNICO: o gateway entra na rede `coolify` (Traefik),
+  # onde o `coolify-redis` também responde pelo alias `redis` (com requirepass) e
+  # sequestrava a resolução DNS → agente escrevia no redis errado (auth) e perdia
+  # mulham/proposal silenciosamente. Nome único elimina a colisão.
+  binance-redis:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes"]
     restart: unless-stopped
