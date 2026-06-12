@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.5.0] - 2026-06-11
+
+### Features
+- 5aa5740 feat(binance-project): capacidade GitHub Issues do HAWK (conversacional)
+
+### Other
+- 771e1c7 docs(binance-project): plano fsa-tools da capacidade GitHub Issues do HAWK
+- 8ed2b12 docs(binance-project): spec capacidade GitHub Issues do HAWK (conversacional)
+
 ## [v0.4.0] - 2026-06-11
 
 ### Features
