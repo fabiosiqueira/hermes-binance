@@ -20,8 +20,8 @@ Relatório completo: `docs/hermes-validate/2026-06-12-hawk-functionality-validat
   - **#6 Part B — ABERTA (follow-up):** Risk Gateway single-threaded (`HTTPServer`, risk_gateway.py:388) → serialização. Pede `ThreadingHTTPServer` + lock no `financial_state` do `handle_execute`. Não embarcado (mudança de concorrência sub-testada em gateway financeiro). Componente betrader#6 (beholder serialization) infla latência.
 - **#7** (a própria LLM) — condition de `AutomationSpec` (schemas.py:173-175) aceita só `MEMORY['SYM:IND'] <op> literal`; não referencia `POSITION_LIQ_PRICE` dinamicamente → sentinela de liq desatualiza. enhancement.
 
-## Rodada de fix em aberto (NÃO fechada)
-Branch `fix/issue-6-brief-timeout-threaded-gateway` pushed, NÃO mergeado. Falta close-out via `/done`: merge→main, version bump, Coolify rebuild (baked consistente com volume), tracking #6. git limpo ≠ rodada fechada.
+## Rodada de fix — FECHADA (/done deploy prd, 2026-06-12 ~21:17 UTC)
+`/done` completo: tests 156 verde → commit → merge→main (`e5b260f`) → **v0.6.1** (CHANGELOG) → tracking #6 (comentado, NÃO fechado — Part B aberta) → memory → **Coolify rebuild prd `running:healthy`**. Baked agora consistente com o volume; retest pós-deploy: `brief`→chave, rc 0, 39s. Próximo: revisor fecha #6 (ou Part B vira fix), e #4/F3 segue o caminho de gradação.
 
 ## Próximo passo (operador habilitou workspace betrader: `trading/betrader-hydra`, fluxo analisar→corrigir→publicar→testar)
 1. **#6** — fix primário é binance-side (ThreadingHTTPServer + timeout). Componente betrader (#6 beholder serialization) pode ser atacado no workspace `trading/betrader-hydra` se for o gargalo dominante da latência. Decidir lever após medir a contribuição de cada lado.
