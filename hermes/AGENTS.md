@@ -95,9 +95,9 @@ Schema `StrategyProposal` (exemplo VÁLIDO — campos e tipos exatos de `scripts
   ],
   "automations": [
     {
-      "name": "rsi-oversold-exit",
+      "name": "rsi-oversold-wake",
       "condition": "MEMORY['BTCUSDT:RSI_14_15m'].current < 30",
-      "action": {"type": "ORDER", "side": "SELL", "reduceOnly": true}
+      "action": {"type": "WEBHOOK"}
     }
   ],
   "teardown": ["automation_id_a_cancelar"]
@@ -106,7 +106,7 @@ Schema `StrategyProposal` (exemplo VÁLIDO — campos e tipos exatos de `scripts
 
 - `side` é `"BUY"` ou `"SELL"`; `order_type` é `"MARKET"` ou `"LIMIT"` (LIMIT exige `limit_price`).
 - `sizing_pct` é **% do equity em (0, 100]** (ex.: `2.0` = 2% do equity) — não fração.
-- `automations[]`: `name` é obrigatório; `action` é **dict** (payload da action betrader), nunca string.
+- `automations[]`: `name` é obrigatório; `action` é **dict** (payload da action betrader), nunca string. Tipos de action que funcionam: `{"type": "WEBHOOK"}` (sentinela — me acorda pra re-decidir; url/secret injetados pela infra) e `{"type": "ORDER", "orderTemplateId": "<id>"}` (exige um OrderTemplate JÁ existente no betrader, criado pelo operador na UI — eu não crio templates). Campos soltos tipo `side`/`reduceOnly` NÃO existem no modelo de action e são descartados. Para gestão de saída, prefira sentinela WEBHOOK + re-decisão no ciclo.
 - `stop_loss` é **obrigatório** em toda entrada — schema rejeita proposta sem ele.
 `entries: []` é proposal válida (não operar é posição válida; deve ter `reasoning` explicando).
 Os schemas completos e validações estão em `scripts/schemas.py`.

@@ -692,8 +692,11 @@ def test_install_automations_injeta_webhook_url_e_secret_do_env(monkeypatch) -> 
 
 
 @respx.mock
-def test_install_automations_nao_webhook_passa_intacta(monkeypatch) -> None:
-    # Action de outro tipo passa inalterada (sem webhookUrl/webhookSecret).
+def test_install_automations_nao_webhook_filtra_colunas_reais(monkeypatch) -> None:
+    # Action do betrader só tem {type, orderTemplateId, withdrawTemplateId,
+    # webhookUrl, webhookSecret} no Prisma — chaves extras (side/reduceOnly)
+    # quebram o insert. O adapter filtra para as colunas reais antes de POSTar,
+    # sem injetar webhookUrl/webhookSecret em action não-WEBHOOK.
     _set_webhook_env(monkeypatch)
     post_route = respx.post(f"{BASE_URL}/api/automations").mock(
         return_value=httpx.Response(200, json={"id": "auto-1"})
@@ -704,14 +707,32 @@ def test_install_automations_nao_webhook_passa_intacta(monkeypatch) -> None:
     spec = AutomationSpec(
         name="exit-order",
         condition="MEMORY['BTCUSDT:RSI_14'] > 70",
-        action={"type": "ORDER", "side": "SELL", "reduceOnly": True},
+        action={"type": "ORDER", "orderTemplateId": "tmpl-1", "side": "SELL", "reduceOnly": True},
     )
     with _client() as client:
         client.install_automations([spec])
     action = json.loads(post_route.calls.last.request.content)["newAutomation"]["actions"][0]
-    assert action == {"type": "ORDER", "side": "SELL", "reduceOnly": True}
+    assert action == {"type": "ORDER", "orderTemplateId": "tmpl-1"}
     assert "webhookUrl" not in action
     assert "webhookSecret" not in action
+
+
+@respx.mock
+def test_install_automations_webhook_filtra_method(monkeypatch) -> None:
+    # `method` não é coluna do Action — sentinela WEBHOOK POSTa só
+    # {type, webhookUrl, webhookSecret} (o Beholder sempre faz POST).
+    _set_webhook_env(monkeypatch)
+    post_route = respx.post(f"{BASE_URL}/api/automations").mock(
+        return_value=httpx.Response(200, json={"id": "auto-1"})
+    )
+    respx.post(url__regex=rf"{BASE_URL}/api/automations/.+/start").mock(
+        return_value=httpx.Response(200, json={"id": "auto-1", "isActive": True})
+    )
+    spec = _webhook_spec()  # action contém "method": "POST"
+    with _client() as client:
+        client.install_automations([spec])
+    action = json.loads(post_route.calls.last.request.content)["newAutomation"]["actions"][0]
+    assert set(action.keys()) == {"type", "webhookUrl", "webhookSecret"}
 
 
 @respx.mock

@@ -36,6 +36,16 @@ from schemas import (
 # fica NEW até o gatilho disparar; FILLED/PARTIALLY_FILLED também são confirmação.
 _STOP_CONFIRMED_STATUS = {"NEW", "FILLED", "PARTIALLY_FILLED"}
 
+# Colunas reais do modelo Action do betrader (prisma): qualquer outra chave no
+# payload derruba o createMany com "Unknown argument".
+_ACTION_COLUMNS = {
+    "type",
+    "orderTemplateId",
+    "withdrawTemplateId",
+    "webhookUrl",
+    "webhookSecret",
+}
+
 # Precisão default de quantidade (casas decimais) para o sizing → quantity. O doc de
 # verificação não expõe endpoint de precision no fluxo de ordem (seção 2), então é
 # parâmetro do client; BTCUSDT perp (M1) usa 3 casas.
@@ -525,6 +535,13 @@ class BetraderClient:
                 if spec.action.get("type") == "WEBHOOK"
                 else spec.action
             )
+            # O modelo Action do betrader só tem estas colunas — chave extra
+            # (method/side/reduceOnly) quebra o insert Prisma do lado de lá.
+            action = {
+                campo: valor
+                for campo, valor in action.items()
+                if campo in _ACTION_COLUMNS
+            }
             parsed = parse_automation_condition(spec.condition)
             new_automation: dict = {
                 "name": spec.name,
