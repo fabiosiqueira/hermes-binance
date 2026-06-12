@@ -1,34 +1,33 @@
 # STATE — validação betrader (issue #5)
 
-Atualizado: 2026-06-12 16:25 UTC (sessão `/hermes-validate #5` — host-side)
+Atualizado: 2026-06-12 17:05 UTC (sessão `/hermes-validate #5`)
 
 ## Objetivo
-Integração com betrader 100% testada → corrigida → entregue (issue #5).
+Acesso ao betrader 100% testado/corrigido + handoff do ciclo 100% Redis (sem filesystem). Issue #5.
 
-## Resultado desta sessão (host-side, container prod)
+## Resultado
 
-### ✅ Blocker original RESOLVIDO — acesso ao betrader 100% funcional
-Preflight ok: `gateway-dcvrz0*` e `risk-gateway-dcvrz0*` healthy; scripts deployados conferem (`_get_optional`, `mulham_analyzer.py` re-semeado).
-- **`POST /brief` → 200** (antes 502). `brief.json`: `equity=7283.51` (futures testnet real → **-2015 resolvido**), `balance=10000`, `candles=200` OHLCV reais (~64k) → **cadeia de 4 bugs do candle corrigida no betrader**, `positions=[]` legítimo, `risk_state` presente.
-- **Mulham determinístico:** `binance:strategist:mulham:BTCUSDT` (+`:signature`,`:material_change`) no binance-redis, sinais reais (rect 64394/64132, SL/TP).
-- **Redis-first proposal + execute:** injetei proposal no-action → `execute redis:` → `{"executed":true,"orders":[],...}`. Gate rodou ok.
-- **Ciclo REAL do agente** às 16:05:55 no stream `decisions` (risk-redis): reasoning Mulham completo (bias=bearish, rect 64394.44, SL 64458.83, TP 63320), `gate_ok=true`. End-to-end com LLM funcionou.
-- `financial_state` persistido (risk-redis): initial_equity=1000, cum_pnl=0.
+### ✅ Acesso ao betrader (blocker original) — RESOLVIDO
+`-2015` (keys Futures testnet) + cadeia de 4 bugs de candle corrigidos no betrader (commits remotos 5fa0cac/1f0d467: POST /api/market candles+indicators). Brief real: equity 7283.51, 200 candles OHLCV, indicators.
 
-### ⚠️ "brief redis-first" — NÃO é bug de código; é overreach de doc (resolvido via investigação Opção C)
-Teste decisivo (brief fresco): brief **AUSENTE** no binance-redis (redis do agente), **PRESENTE** no risk-redis TTL 898 (redis do gateway). Mas:
-- **F2 (memória + `docker-compose.yaml:24`): brief cache no risk-redis é DESIGN — "inforjável pelo agente"** (anti-forja: se o brief fosse gravável no binance-redis, o agente poderia forjar equity/preços p/ passar o gate; `handle_execute` relê o brief do cache PRIVADO).
-- **`71975a8` ("redis-first brief/proposal") NÃO tocou `risk_gateway.py`** — só docs + `mulham_analyzer.py` + `strategist_cycle.py`. Proposal redis-first e mulham redis-first foram wirados de verdade; **brief redis-first nunca foi** (gateway intocado segue gravando no risk-redis). Os docs foram atualizados afirmando algo que o código não faz.
-- **Verdade:** brief é entregue ao agente via `workspace/brief.json` (contrato do thin-client: stdout imprime o path). O tick *"agent lê brief do Redis — não depende de filesystem"* + AGENTS.md/SOUL.md/cron + comentário `mulham_analyzer.py:364` estão ERRADOS e contradizem a F2.
+### ✅ Handoff 100% Redis (sem filesystem) — IMPLEMENTADO + DEPLOYADO + VALIDADO (commit 9dbd1ab)
+Antes: gateway gravava brief só no risk-redis privado → agente (binance-redis) não via → caía no brief.json (filesystem). Decisão errada.
+Fix:
+- **risk_gateway.handle_brief dual-write**: cópia AUTORITATIVA no risk-redis (o gate relê, agente não forja) + espelho no binance-redis (`BRIEF_MIRROR_REDIS_HOST=binance-redis`, deployado) para o agente ler redis-first.
+- **mulham_analyzer**: modo redis (`--symbol`), lê brief do Redis, grava sinais no Redis. Sem arquivo.
+- **strategist_cycle**: `brief` dispara gateway+mulham e imprime a CHAVE Redis; `execute` redis-only (`redis:KEY`). Sem brief.json/proposal.json.
+- compose prod+local: BRIEF_MIRROR (NÃO `redis`, que colide com coolify-redis).
+- SOUL/AGENTS/cron/config: fluxo redis-only, removidas afirmações de filesystem.
+- Testes: 154 verde (inclui correção de 8 falhas pré-existentes da sessão anterior — mocks /api/market GET→POST). Verifier independente: PASS.
 
-## Próximo passo — RECOMENDAÇÃO: Opção B (alinhar doc à realidade segura)
-Código está correto (F2). Corrigir só o que afirma falsamente "brief redis-first":
-- AGENTS.md / SOUL.md / cron jobs.json: brief = **file-first** (`brief.json`); redis-first vale p/ mulham + proposal.
-- comentário `mulham_analyzer.py:364` ("gateway already puts the brief under binance:strategist:brief").
-- reformular o tick da Seção 1 da issue #5 (brief file-first é o canal seguro e intencional).
-- (Opção A — espelhar brief no binance-redis via 2ª conexão — possível e não quebra o gate, mas adiciona infra p/ ganho ~nulo: o agente já tem brief.json. Descartada salvo pedido.)
+### Validação runtime (prod, DRY_RUN)
+- Deploy Coolify (rebuild baked) + **re-seed manual do volume do agente** (scripts/SOUL/AGENTS — gotcha learned #28: volume sombreia baked).
+- `brief` → stdout = `binance:strategist:brief:BTCUSDT`; **brief AGORA presente no binance-redis** (TTL 899, equity 7283, 200 candles) — o agente alcança. mulham presente. **Nenhum arquivo escrito** (workspace vazio após run).
+- Ciclo completo redis-only: proposal SET no binance-redis → `execute redis:` → `{"executed":true}`. Gate rodou; decision no risk-redis (gate_ok=true); financial_state persistido.
 
-Aguardando OK do operador p/ editar persona docs (AGENTS/SOUL/cron — operator-owned). Demais ticks: betrader access verde.
+## Próximo passo
+Revisor Hermes (`hermes -z`) confirma canal+Redis (binance:strategist:brief|mulham|proposal no binance-redis) e **fecha** #5. Eu nunca fecho.
 
 ## Não-fechado
-Issue #5 aberta. betrader#6 (serialização beholder) já fora do caminho crítico.
+Issue #5 aberta até sign-off do revisor. betrader#6 (serialização beholder) fora do caminho crítico (mitigado em a2f5077).
+Drift menor: docker-compose.yaml prod usa serviço `binance-redis` (commit 9faaeda); local ainda `redis` — intencional (sem coolify-redis local).
