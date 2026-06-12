@@ -352,12 +352,23 @@ class BetraderClient:
             used_leverage=used_leverage,
         )
 
-        # Índices correntes do Beholder (alimentam o reasoning do LLM; não tipados aqui).
-        # Não-essenciais ao Brief: tolerados se o betrader falhar (observability já
-        # notificada). O Brief não deve quebrar por dado que ele descarta — ex.
-        # /api/beholder/memory 500 "Value is not JSON serializable" (betrader-hydra#6).
+        # Índices correntes do Beholder. /api/beholder/memory segue descartado
+        # (betrader-hydra#6: 500 de serialização); /api/automations/indexes agora
+        # COMPÕE o Brief (memory_indexes, #7) — é por ele que o agente descobre o
+        # nome exato dos índices vivos (LIQ_PROXIMITY_PCT_<uid> etc.). Ambos
+        # tolerantes: falha → observability notificada, Brief não quebra.
         self._get_optional("/api/beholder/memory")
-        self._get_optional("/api/automations/indexes", params={"symbol": symbol})
+        indexes_response = self._get_optional(
+            "/api/automations/indexes", params={"symbol": symbol}
+        )
+        memory_indexes: list[dict] = []
+        if indexes_response is not None:
+            try:
+                payload = indexes_response.json()
+            except ValueError:
+                payload = None
+            if isinstance(payload, list):
+                memory_indexes = [ix for ix in payload if isinstance(ix, dict)]
 
         # Ativos: automations + ordens vigentes.
         automations = self._get("/api/automations", params={"mode": "all"}).json()
@@ -388,6 +399,7 @@ class BetraderClient:
             portfolio=portfolio,
             risk_state=risk_state,
             active=active,
+            memory_indexes=memory_indexes,
         )
 
     # --- Entrada + stop (INVARIANTE CENTRAL: 2 calls + rollback) ---

@@ -136,6 +136,11 @@ class Brief(BaseModel):
     portfolio: Portfolio
     risk_state: RiskState
     active: list[ActiveItem] = Field(default_factory=list)
+    # Índices VIVOS do Beholder (GET /api/automations/indexes): nomes exatos
+    # (com sufixos de interval/userId, ex. RSI_14_15m, LIQ_PROXIMITY_PCT_<uid>)
+    # para compor conditions de automation. Passthrough não-tipado e tolerante:
+    # falha do endpoint → lista vazia, o Brief não quebra.
+    memory_indexes: list[dict] = Field(default_factory=list)
 
 
 class EntryOrder(BaseModel):

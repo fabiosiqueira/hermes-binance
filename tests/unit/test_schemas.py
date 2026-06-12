@@ -224,6 +224,39 @@ def test_automation_condition_formato_invalido_falha(condition: str) -> None:
         )
 
 
+# --- Brief.memory_indexes (#7): índices vivos do Beholder no Brief ---
+
+
+def test_brief_memory_indexes_default_vazio() -> None:
+    brief = Brief(
+        timestamp="2026-06-12T22:00:00Z",
+        mode=ExecutionMode.DRY_RUN,
+        market=MarketState(symbol="BTCUSDT", timeframe="15m"),
+        portfolio=Portfolio(equity=10000.0, balance=10000.0, used_leverage=0.0),
+        risk_state=RiskState(daily_pnl=0.0, drawdown_pct=0.0, equity_curve_ref="k"),
+    )
+    assert brief.memory_indexes == []
+
+
+def test_brief_memory_indexes_roundtrip() -> None:
+    brief = Brief(
+        timestamp="2026-06-12T22:00:00Z",
+        mode=ExecutionMode.DRY_RUN,
+        market=MarketState(symbol="BTCUSDT", timeframe="15m"),
+        portfolio=Portfolio(equity=10000.0, balance=10000.0, used_leverage=0.0),
+        risk_state=RiskState(daily_pnl=0.0, drawdown_pct=0.0, equity_curve_ref="k"),
+        memory_indexes=[
+            {
+                "symbol": "BTCUSDT",
+                "variable": "LIQ_PROXIMITY_PCT_u1",
+                "eval": "MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_u1']",
+            }
+        ],
+    )
+    reloaded = Brief.model_validate_json(brief.model_dump_json())
+    assert reloaded.memory_indexes[0]["variable"] == "LIQ_PROXIMITY_PCT_u1"
+
+
 # --- parse_automation_condition (#7): split eval/operator/variable p/ o betrader ---
 
 

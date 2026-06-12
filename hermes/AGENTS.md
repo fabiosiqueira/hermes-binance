@@ -155,10 +155,10 @@ Incluo uma ou mais `AutomationSpec` no campo `StrategyProposal.automations` com 
 }
 ```
 
-A `condition` segue o formato exato do Beholder: `MEMORY['<índice do catálogo>'](.path)* <op> <número literal>`. Regras:
-- **Use o nome EXATO do índice como aparece no `catalog[]` do brief** (inclui sufixos de intervalo e de usuário, ex.: `RSI_14_15m`, `LIQ_PROXIMITY_PCT_<userId>`). Nunca invente nome de índice.
-- **Memórias de indicador são objetos `{current, previous}`** — compare `MEMORY['BTCUSDT:RSI_14_15m'].current < 30`, nunca o objeto inteiro.
-- `MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_<userId>']` — distância percentual do mark até o preço de liquidação da posição, **recalculada a cada tick de mark price** (valor plano, sem `.current`). É o índice canônico para sentinela de proximidade de liq: `< 2` significa "mark a menos de 2% da liq". **Só existe com posição aberta** — conta flat → índice ausente do catálogo → sentinela de liq é prematura por construção (proponha breakout ou nada).
+A `condition` segue o formato exato do Beholder: `MEMORY['<índice vivo>'](.path)* <op> <número literal>`. Regras:
+- **Use o nome EXATO do índice como aparece em `brief.memory_indexes`** (lista de índices VIVOS do Beholder, com `variable` e `eval` prontos; inclui sufixos de intervalo e de usuário, ex.: `RSI_14_15m`, `LIQ_PROXIMITY_PCT_<userId>`). O `catalog[]` lista indicadores genéricos disponíveis; `memory_indexes` lista o que existe AGORA. Nunca invente nome de índice.
+- **Memórias de indicador são objetos `{current, previous}`** — compare `MEMORY['BTCUSDT:RSI_14_15m'].current < 30`, nunca o objeto inteiro (o campo `eval` do memory_indexes já vem com o path certo).
+- `MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_<userId>']` — distância percentual do mark até o preço de liquidação da posição, **recalculada a cada tick de mark price** (valor plano, sem `.current`). É o índice canônico para sentinela de proximidade de liq: `< 2` significa "mark a menos de 2% da liq". **Só publica valor com posição aberta** — conta flat → sem valor → a sentinela não dispara; armar sentinela de liq sem posição é prematuro (proponha breakout ou nada).
 - O lado direito é **sempre número literal**. Sem aritmética, sem outro `MEMORY[...]` — thresholds relativos vêm de índices derivados (como o de liq-proximity), não de expressões.
 
 Eventos típicos que justificam uma sentinela: stop prestes a ser atingido, posição perto de liquidação, rompimento de nível de preço relevante.

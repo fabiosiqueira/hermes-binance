@@ -362,6 +362,48 @@ def test_fetch_brief_monta_brief_valido(respx_mock: respx.Router) -> None:
 
 
 @respx.mock
+def test_fetch_brief_expoe_memory_indexes(respx_mock: respx.Router) -> None:
+    # /api/automations/indexes agora compõe o Brief (#7): é por aqui que o agente
+    # descobre o nome EXATO dos índices vivos (inclui sufixo de userId, ex.
+    # LIQ_PROXIMITY_PCT_<uid>) para compor conditions de sentinela.
+    _mock_brief_endpoints(respx_mock)
+    respx_mock.get(f"{BASE_URL}/api/automations/indexes").mock(
+        return_value=httpx.Response(
+            200,
+            json=[
+                {
+                    "symbol": "BTCUSDT",
+                    "variable": "LIQ_PROXIMITY_PCT_u1",
+                    "eval": "MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_u1']",
+                    "example": 2.5,
+                }
+            ],
+        )
+    )
+    with _client() as client:
+        brief = client.fetch_brief(
+            "BTCUSDT", "1h", mode=ExecutionMode.DRY_RUN, risk_state=_risk_state()
+        )
+    assert any(
+        ix.get("variable") == "LIQ_PROXIMITY_PCT_u1" for ix in brief.memory_indexes
+    )
+
+
+@respx.mock
+def test_fetch_brief_memory_indexes_vazio_em_falha(respx_mock: respx.Router) -> None:
+    # Endpoint tolerante: 5xx → memory_indexes=[] sem quebrar o Brief.
+    _mock_brief_endpoints(respx_mock)
+    respx_mock.get(f"{BASE_URL}/api/automations/indexes").mock(
+        return_value=httpx.Response(500, text="boom")
+    )
+    with _client() as client:
+        brief = client.fetch_brief(
+            "BTCUSDT", "1h", mode=ExecutionMode.DRY_RUN, risk_state=_risk_state()
+        )
+    assert brief.memory_indexes == []
+
+
+@respx.mock
 def test_fetch_brief_repassa_risk_state_do_caller(respx_mock: respx.Router) -> None:
     _mock_brief_endpoints(respx_mock)
     rs = _risk_state()
