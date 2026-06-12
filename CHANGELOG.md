@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.6.3] - 2026-06-12
+
+### Fixes
+- d9555f9 fix(binance-project): action de automation filtrada para colunas reais do betrader (#7 rodada 2)
+
 ## [v0.6.2] - 2026-06-12
 
 ### Fixes
