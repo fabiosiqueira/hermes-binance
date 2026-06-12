@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.6.4] - 2026-06-12
+
+### Features
+- 2ce1ed5 feat(binance-project): Brief.memory_indexes — índices vivos do Beholder no Brief (#7 rodada 2)
+
 ## [v0.6.3] - 2026-06-12
 
 ### Fixes
