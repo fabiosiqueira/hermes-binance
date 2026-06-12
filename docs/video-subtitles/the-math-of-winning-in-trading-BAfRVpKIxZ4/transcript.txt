@@ -1,0 +1,373 @@
+Trading is basic math, and if you don't understand these four essential
+understand these four essential concepts, no matter what strategy you
+concepts, no matter what strategy you use or how good your setups are, you
+use or how good your setups are, you will never become a profitable trader.
+will never become a profitable trader. But once you understand them, you'll
+But once you understand them, you'll realize why most traders never become
+realize why most traders never become profitable, even when they're learning
+profitable, even when they're learning the right strategy. In this video, I'll
+the right strategy. In this video, I'll show you the four mathematical concepts
+show you the four mathematical concepts of winning in trading, plus one simple
+of winning in trading, plus one simple question that will change your trading
+question that will change your trading forever. Let's start. So I want to start
+forever. Let's start. So I want to start with these five sentences, and these are
+with these five sentences, and these are going to actually change the way you see
+going to actually change the way you see trading. First one is most traders, and
+trading. First one is most traders, and most of you actually chase perfect
+most of you actually chase perfect entries, but the real edge comes from
+entries, but the real edge comes from probabilities and math. Individual wins
+probabilities and math. Individual wins and losses are basically coin flips, so
+and losses are basically coin flips, so it's a 50/50 for each trade, and
+it's a 50/50 for each trade, and long-term success is decided by your
+long-term success is decided by your system math, and that's going to be the
+system math, and that's going to be the focus of the video, and one trade means
+focus of the video, and one trade means nothing. I want you to look at the chart
+nothing. I want you to look at the chart here, and this is probably where most of
+here, and this is probably where most of your attention goes. The strategy, 40%,
+your attention goes. The strategy, 40%, indicators, psychology, risk. Meanwhile,
+indicators, psychology, risk. Meanwhile, expectancy gets almost no attention, but
+expectancy gets almost no attention, but it's the number that tells you whether
+it's the number that tells you whether the system actually makes money. That is
+the system actually makes money. That is the problem. It's not a lack of effort,
+the problem. It's not a lack of effort, but it's a misdirection of effort, and
+but it's a misdirection of effort, and that's why people spend years in
+that's why people spend years in trading, but still stay stuck, because
+trading, but still stay stuck, because they're focusing on the wrong thing. So
+they're focusing on the wrong thing. So let's start with expectancy, what
+let's start with expectancy, what actually makes money. Now expectancy is
+actually makes money. Now expectancy is the only number that matters, and it's
+the only number that matters, and it's not how your last trade wins, not how
+not how your last trade wins, not how clean your last five setups were, and
+clean your last five setups were, and not how confident you felt. Expectancy
+not how confident you felt. Expectancy is simply the average profit you can
+is simply the average profit you can expect per trade, and the formula goes
+expect per trade, and the formula goes like this: the win rate times the
+like this: the win rate times the average win, minus the loss rate times
+average win, minus the loss rate times the average loss. For example, an 8R
+the average loss. For example, an 8R system at 15% win rate sounds very bad,
+system at 15% win rate sounds very bad, right? You're losing 85% of your trades,
+right? You're losing 85% of your trades, but using the math and using the
+but using the math and using the formula, we can see that it can give you
+formula, we can see that it can give you a positive 350 per trade. And since the
+a positive 350 per trade. And since the math is positive, it means that you'll
+math is positive, it means that you'll be profitable while losing nearly nine
+be profitable while losing nearly nine out of every 10 trades. Now, look at the
+out of every 10 trades. Now, look at the three R system. 55% win rate at a three
+three R system. 55% win rate at a three R, using the math is going to give you
+R, using the math is going to give you this, 1,200 per trade. That is positive.
+this, 1,200 per trade. That is positive. Now, looking at the one R at 70% win
+Now, looking at the one R at 70% win rate, using the math is going to give
+rate, using the math is going to give you 400 per trade. So, if you can see
+you 400 per trade. So, if you can see that 70% and 15% almost give you kind of
+that 70% and 15% almost give you kind of the same expectancy. So, it's not about
+the same expectancy. So, it's not about the win rate itself, and it's not about
+the win rate itself, and it's not about the R multiple itself. It's the
+the R multiple itself. It's the combination of the two that creates the
+combination of the two that creates the edge. Now, why? Why expectancy matters
+edge. Now, why? Why expectancy matters this much? Because it takes your entire
+this much? Because it takes your entire strategy into one clear number. And
+strategy into one clear number. And instead of saying, "I think this works."
+instead of saying, "I think this works." you can say, "This system makes X per
+you can say, "This system makes X per trade over a large sample." That is the
+trade over a large sample." That is the difference. So, simply, if the
+difference. So, simply, if the expectancy is positive, I mean, you have
+expectancy is positive, I mean, you have a profitable system. Now, there is one
+a profitable system. Now, there is one thing that most of you forget about.
+thing that most of you forget about. Your expectancy on paper is not your
+Your expectancy on paper is not your real expectancy because every trade has
+real expectancy because every trade has cost. So, spread, commission, slippage,
+cost. So, spread, commission, slippage, all of that cuts into the result. So, a
+all of that cuts into the result. So, a strategy can look profitable on paper
+strategy can look profitable on paper and still lose money in reality because
+and still lose money in reality because you're not taking these into account.
+you're not taking these into account. Now, let's look at this graph here
+Now, let's look at this graph here because this is where most of you
+because this is where most of you actually give up, or maybe get fooled.
+actually give up, or maybe get fooled. For the first maybe 10 or 20 trades,
+For the first maybe 10 or 20 trades, you're not seeing much results, so
+you're not seeing much results, so you're not or you cannot say if this
+you're not or you cannot say if this system is good or bad. Only after when
+system is good or bad. Only after when we have a large sample, the truth
+we have a large sample, the truth appears. So, right here, you cannot say
+appears. So, right here, you cannot say if you have a profitable system or not.
+if you have a profitable system or not. Sometimes it's going to go like this and
+Sometimes it's going to go like this and go up and a lot of noise, but I'm having
+go up and a lot of noise, but I'm having here a perfect scenario. But only after
+here a perfect scenario. But only after a large sample, the expectancy appears.
+a large sample, the expectancy appears. And now, after maybe 100 trade, you can
+And now, after maybe 100 trade, you can for sure say that, "Okay, this is
+for sure say that, "Okay, this is unprofitable system and this is
+unprofitable system and this is profitable." You might be walking away
+profitable." You might be walking away from a perfectly good edge. So, maybe
+from a perfectly good edge. So, maybe it's going to start like this, but then
+it's going to start like this, but then go up and it's going to be profitable.
+go up and it's going to be profitable. You just quit before it start revealing
+You just quit before it start revealing itself. And I want you to remember this
+itself. And I want you to remember this because that's going to connect directly
+because that's going to connect directly to variance, which we're going to be
+to variance, which we're going to be covering later. So, now the question
+covering later. So, now the question becomes, how do you actually build a
+becomes, how do you actually build a profitable system? The answer is a
+profitable system? The answer is a trade-off. One that most traders never
+trade-off. One that most traders never fully accept. There is no perfect
+fully accept. There is no perfect strategy. Every system comes with a
+strategy. Every system comes with a trade-off. Higher reward usually means
+trade-off. Higher reward usually means lower win rate, and higher win rate
+lower win rate, and higher win rate usually means smaller reward. That is
+usually means smaller reward. That is the reality of trading. And this is
+the reality of trading. And this is where many traders get stuck because
+where many traders get stuck because they keep looking for a system that
+they keep looking for a system that gives them both. It does not exist. Now,
+gives them both. It does not exist. Now, based on the chart, we can see the
+based on the chart, we can see the expectancy per trade for different
+expectancy per trade for different system. This system has an 8R and 50%
+system. This system has an 8R and 50% win rate, and we're going to be covering
+win rate, and we're going to be covering the uh relationship between the two.
+the uh relationship between the two. This has a 6R and 30% win rate. So, if
+This has a 6R and 30% win rate. So, if you notice, these are very close to each
+you notice, these are very close to each other. This is a 6R 30%, this is a 3R
+other. This is a 6R 30%, this is a 3R 55%, and even there is a big difference
+55%, and even there is a big difference when it comes to the win rate, but
+when it comes to the win rate, but they're very close when it comes to the
+they're very close when it comes to the expectancy. And even a 15% win rate and
+expectancy. And even a 15% win rate and a 70% win rate are also very close to
+a 70% win rate are also very close to each other. Now, look at the chart here.
+each other. Now, look at the chart here. This is the reward to risk here and the
+This is the reward to risk here and the win rate here. As the target gets
+win rate here. As the target gets bigger, the win rate drops. And that's
+bigger, the win rate drops. And that's not because you're doing something
+not because you're doing something wrong, but because that's how the market
+wrong, but because that's how the market work. The further price has to travel,
+work. The further price has to travel, the less often it gets there. Now, the
+the less often it gets there. Now, the sweet spot would be somewhere in here,
+sweet spot would be somewhere in here, on the middle. You don't want to go
+on the middle. You don't want to go really here or a 1R and 70%. You want to
+really here or a 1R and 70%. You want to be in the middle. So, coming back to the
+be in the middle. So, coming back to the sweet spot again, and that's where the
+sweet spot again, and that's where the math and reality meet. It's not the most
+math and reality meet. It's not the most exciting strategy, not the most
+exciting strategy, not the most impressive back test, but the one you
+impressive back test, but the one you can actually execute over hundreds of
+can actually execute over hundreds of trades, and that's what you're looking
+trades, and that's what you're looking for. So, if we notice here, the sweet
+for. So, if we notice here, the sweet spot would be somewhere in the middle
+spot would be somewhere in the middle here. I mean, if you can be very close
+here. I mean, if you can be very close to the dark spot or the dark color,
+to the dark spot or the dark color, that's going to be the best one, but
+that's going to be the best one, but that's not realistic. But, the sweet
+that's not realistic. But, the sweet spot is to be in the middle and very
+spot is to be in the middle and very close to the dark color. You could be
+close to the dark color. You could be having a 40% win rate and maybe a 4R,
+having a 40% win rate and maybe a 4R, that's going to be good. 50% win rate,
+that's going to be good. 50% win rate, 3R, 4R, that is good. Improvement in
+3R, 4R, that is good. Improvement in trading would be going to the right top,
+trading would be going to the right top, increasing the win rate and the reward
+increasing the win rate and the reward to risk, but you should be realistic.
+to risk, but you should be realistic. And I want to tell you that you do not
+And I want to tell you that you do not need to win as often as you think. And
+need to win as often as you think. And this is the breakeven formula, so you
+this is the breakeven formula, so you can actually apply this to your R. So,
+can actually apply this to your R. So, if you're focusing you on 5R, you apply
+if you're focusing you on 5R, you apply this and you get definite result. So,
+this and you get definite result. So, applying the formula, if your target is
+applying the formula, if your target is one reward to risk, then you need 50% to
+one reward to risk, then you need 50% to break even and above 50% to win. But, at
+break even and above 50% to win. But, at 4R, you only need above 20% to win. So,
+4R, you only need above 20% to win. So, think about that. You can be actually
+think about that. You can be actually wrong most of the time, 80% of the time,
+wrong most of the time, 80% of the time, and still not lose money. Variance. Why
+and still not lose money. Variance. Why traders emotionally fail. Now, this is
+traders emotionally fail. Now, this is where many traders emotionally fall
+where many traders emotionally fall apart even when they're doing everything
+apart even when they're doing everything right. So, variance actually change a
+right. So, variance actually change a lot about you. Now, look at these three
+lot about you. Now, look at these three curves. These are based on the same
+curves. These are based on the same system, same rules, and same expectancy,
+system, same rules, and same expectancy, but completely different experiences.
+but completely different experiences. One gets a smooth ride to the upside,
+One gets a smooth ride to the upside, one gets a brutal drawdown, and one
+one gets a brutal drawdown, and one lands somewhere in between. Now, imagine
+lands somewhere in between. Now, imagine that you are the trader in the drawdown.
+that you are the trader in the drawdown. You'll be questioning everything and
+You'll be questioning everything and you'll be looking for a new strategy,
+you'll be looking for a new strategy, wondering if the edge stopped working.
+wondering if the edge stopped working. Meanwhile, someone else is trading the
+Meanwhile, someone else is trading the exact same system and having different
+exact same system and having different results and winning from the beginning.
+results and winning from the beginning. That's what the is. And this is one of
+That's what the is. And this is one of the hardest truth in trading. You can
+the hardest truth in trading. You can basically do everything right and still
+basically do everything right and still lose. So, you get the right entry, the
+lose. So, you get the right entry, the right stop, the right target, and you
+right stop, the right target, and you execute your trading plan, and still
+execute your trading plan, and still lose seven trades in a row. Now, simply
+lose seven trades in a row. Now, simply variance means that short-term results
+variance means that short-term results are not everything. They don't tell you
+are not everything. They don't tell you everything. You can also break every
+everything. You can also break every rule and win five trades in a row, and
+rule and win five trades in a row, and that is very dangerous. And short-term
+that is very dangerous. And short-term results outcome prove nothing. Only a
+results outcome prove nothing. Only a large sample tell the truth, and that
+large sample tell the truth, and that also applies to expectancy. We know that
+also applies to expectancy. We know that one trade means nothing, and also a
+one trade means nothing, and also a small sample means nothing. Now, a lot
+small sample means nothing. Now, a lot of time, your [clears throat] mind will
+of time, your [clears throat] mind will start playing games, and it's going to
+start playing games, and it's going to trick you. So, I'll be having one loss,
+trick you. So, I'll be having one loss, maybe two losses, three losses, and when
+maybe two losses, three losses, and when you have four losses in a row, you would
+you have four losses in a row, you would think that now the next one would have a
+think that now the next one would have a much higher probability to win, and
+much higher probability to win, and you'll be saying to yourself and
+you'll be saying to yourself and thinking, "Okay, the next one has to win
+thinking, "Okay, the next one has to win because now I'm having four losses in a
+because now I'm having four losses in a row." So, you increase your size, you
+row." So, you increase your size, you take more risk, you go more aggressive,
+take more risk, you go more aggressive, and then it's a loser again. What we
+and then it's a loser again. What we need to understand from this, and that
+need to understand from this, and that is what gambler's fallacy is, that every
+is what gambler's fallacy is, that every trade is still independent. Even if you
+trade is still independent. Even if you lose five trades before it, the next
+lose five trades before it, the next trade is still a 50/50. It's a coin flip
+trade is still a 50/50. It's a coin flip again. So, I want you to be careful. It
+again. So, I want you to be careful. It does not matter how much losses you have
+does not matter how much losses you have taken in the past, the percentage of win
+taken in the past, the percentage of win rate for every trade is still 50% and
+rate for every trade is still 50% and not after four losses it goes to 82% or
+not after four losses it goes to 82% or 91% after five losses. No, it still stay
+91% after five losses. No, it still stay the same as 50%. Now, we get to a risk
+the same as 50%. Now, we get to a risk because none of the math we've covered
+because none of the math we've covered matters if you don't survive long enough
+matters if you don't survive long enough for the edge to play out. Position
+for the edge to play out. Position sizing is where discipline becomes
+sizing is where discipline becomes visible. So, every trade has a different
+visible. So, every trade has a different stop loss size. Every risk in dollars
+stop loss size. Every risk in dollars must stay the same. Bigger stop losses
+must stay the same. Bigger stop losses mean smaller position size, and smaller
+mean smaller position size, and smaller size equal larger position size. So,
+size equal larger position size. So, from this, that means the dollar risk or
+from this, that means the dollar risk or the percentage stay the same while
+the percentage stay the same while everything can change, and we need to
+everything can change, and we need to adjust accordingly. Now, why your risk
+adjust accordingly. Now, why your risk per trade matters so much? Because if
+per trade matters so much? Because if you're risking too much, even a normal
+you're risking too much, even a normal losing streak becomes dangerous. If
+losing streak becomes dangerous. If you're risking small enough, you give
+you're risking small enough, you give your edge room to breathe. So, what I
+your edge room to breathe. So, what I suggest is go from 0.25%
+suggest is go from 0.25% to 2% risk per trade. That is the
+to 2% risk per trade. That is the maximum and a one bad week or bad month
+maximum and a one bad week or bad month will not just destroy everything. So,
+will not just destroy everything. So, what you can do is, and that is what I'm
+what you can do is, and that is what I'm the most important part of this video,
+the most important part of this video, is position sizing. So, use a position
+is position sizing. So, use a position size calculator. You could be using
+size calculator. You could be using this, and that's the link. So, you go
+this, and that's the link. So, you go and have the account currency, the
+and have the account currency, the account balance, the risk percentage.
+account balance, the risk percentage. So, you have $100 in your account, you
+So, you have $100 in your account, you put 100 or 1,000, your risk percentage
+put 100 or 1,000, your risk percentage 0.5%, and then your currency pair. So,
+0.5%, and then your currency pair. So, I'm trading Euro dollar, and then the
+I'm trading Euro dollar, and then the stop loss size is 25 pips. You press
+stop loss size is 25 pips. You press calculate, and that's what you get. So,
+calculate, and that's what you get. So, you're basically risking $5 of your
+you're basically risking $5 of your account, and then you come here to the
+account, and then you come here to the standard lot, and that's what you're
+standard lot, and that's what you're risking. So, you should enter the trade
+risking. So, you should enter the trade with 0.02 lot size. Or, you could do one
+with 0.02 lot size. Or, you could do one simply on TradingView. So, you have this
+simply on TradingView. So, you have this indicator called lot size calculator.
+indicator called lot size calculator. You simply apply this and adjust
+You simply apply this and adjust accordingly, and it's going to show you
+accordingly, and it's going to show you everything. So, you adjust the settings,
+everything. So, you adjust the settings, and it's going to give you the lot size
+and it's going to give you the lot size here. That is what you're going to be
+here. That is what you're going to be risking. Now, even the worst losing
+risking. Now, even the worst losing streak is temporary if you have a valid
+streak is temporary if you have a valid system. So, a losing streak is not a
+system. So, a losing streak is not a problem, but your position size is. If
+problem, but your position size is. If you can control your risk, a losing
+you can control your risk, a losing streak hurts. So, if you can notice, it
+streak hurts. So, if you can notice, it hurts, and you have some drawdown here,
+hurts, and you have some drawdown here, but you can still survive this. But, if
+but you can still survive this. But, if you're risking too much here, you'd lose
+you're risking too much here, you'd lose everything. So, calculating the risk in
+everything. So, calculating the risk in order for this drawdown, if it happens,
+order for this drawdown, if it happens, you don't lose all your money, but you
+you don't lose all your money, but you can still recover and then have a
+can still recover and then have a profitable system after that. Now, risk
+profitable system after that. Now, risk of reward. let's look at these numbers
+of reward. let's look at these numbers here. The higher the risk, so this is
+here. The higher the risk, so this is what you're risking here, 0.5, 1, 2, and
+what you're risking here, 0.5, 1, 2, and 5%. The higher the risk, the faster the
+5%. The higher the risk, the faster the probability of ruin explodes. So, here,
+probability of ruin explodes. So, here, that's the probability of 50% drawdown.
+that's the probability of 50% drawdown. Notice how it explode to the upside
+Notice how it explode to the upside aggressively. So, notice the difference
+aggressively. So, notice the difference between 1%, 18, and 65%. This is not an
+between 1%, 18, and 65%. This is not an opinion and not psychology, but this is
+opinion and not psychology, but this is basic math. And if you understand this,
+basic math. And if you understand this, you understand survival, which is the
+you understand survival, which is the foundation of everything in trading.
+foundation of everything in trading. Now, losses and gains are not equal. In
+Now, losses and gains are not equal. In this case, the math works against you.
+this case, the math works against you. So, a 10% loss need 11% to recover, and
+So, a 10% loss need 11% to recover, and it's not only 10%, but as the loss gets
+it's not only 10%, but as the loss gets bigger, then you need more to recover.
+bigger, then you need more to recover. For example, 30% loss need 43% to
+For example, 30% loss need 43% to recover, 50% loss need 100% to recover.
+recover, 50% loss need 100% to recover. Let me think about that. The moment you
+Let me think about that. The moment you lose half of your account, the market
+lose half of your account, the market now expects you to double it just to get
+now expects you to double it just to get back to zero. That's huge. And that's
+back to zero. That's huge. And that's why protecting your capital matters so
+why protecting your capital matters so much. So, after everything we covered,
+much. So, after everything we covered, all of the concepts, I know you
+all of the concepts, I know you understand them. The question becomes
+understand them. The question becomes simple, what changes now? What to do?
+simple, what changes now? What to do? And I want you to be honest with
+And I want you to be honest with yourself here. Now, math could be one of
+yourself here. Now, math could be one of the problems, psychology could be one of
+the problems, psychology could be one of the problems, but in this video, we're
+the problems, but in this video, we're going to be focusing on psychology, but
+going to be focusing on psychology, but you can take this question and apply it
+you can take this question and apply it also to any aspect of trading. So, what
+also to any aspect of trading. So, what is the one thing you know you're doing
+is the one thing you know you're doing wrong that if fixed would completely
+wrong that if fixed would completely change your trading? You probably
+change your trading? You probably already know the answer, and if you sit
+already know the answer, and if you sit with it, you would find an answer, and
+with it, you would find an answer, and that answer could change your trading
+that answer could change your trading forever. This could be judging your
+forever. This could be judging your system after a few trades, risking too
+system after a few trades, risking too much to feel something, so you're
+much to feel something, so you're actually seeking emotions instead of
+actually seeking emotions instead of trading the market. Is it confusing good
+trading the market. Is it confusing good outcomes with good execution? Is it
+outcomes with good execution? Is it abandoning your edge when variance
+abandoning your edge when variance appears? Or is it chasing certainty in a
+appears? Or is it chasing certainty in a game of probabilities? It could be one
+game of probabilities? It could be one of these or it could be something
+of these or it could be something different. So, you have your own answer
+different. So, you have your own answer and you could actually write it in the
+and you could actually write it in the comments for people to get inspired. And
+comments for people to get inspired. And instead, and that's what you can do
+instead, and that's what you can do regardless of the answer to the
+regardless of the answer to the question, you want to think in
+question, you want to think in probabilities and not outcomes. You want
+probabilities and not outcomes. You want to judge your edge over a large sample.
+to judge your edge over a large sample. That's how you actually allow the math
+That's how you actually allow the math to work in your favor. You risk small
+to work in your favor. You risk small enough to survive the variance. You
+enough to survive the variance. You should know that consistency beats
+should know that consistency beats perfection and your job is execution and
+perfection and your job is execution and not prediction. So, that's it for this
+not prediction. So, that's it for this video. I hope that you learned something
+video. I hope that you learned something new. If you want to learn my trading
+new. If you want to learn my trading strategy, make sure to check out It's
+strategy, make sure to check out It's School. The link is in the description.
+School. The link is in the description. Leave a comment with whatever question
+Leave a comment with whatever question you're having. Like and subscribe to the
+you're having. Like and subscribe to the channel. That's it and I'll see you in
+channel. That's it and I'll see you in the next one.

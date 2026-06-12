@@ -38,8 +38,19 @@ def _indicators_payload() -> dict:
 
 
 def _market_payload() -> dict:
-    # GET /api/market → {indicators: {NOME: number}}; 0 = cache miss (seção 1).
-    return {"indicators": {"RSI": 55.0, "MACD": 0}}
+    # POST /api/market → {timeframes:[{interval, indicators, candles}]}; 0 = cache miss.
+    return {
+        "timeframes": [
+            {
+                "interval": "1h",
+                "indicators": {"RSI": 55.0, "MACD": 0},
+                "candles": [
+                    {"timestamp": 1781100000000, "open": 60000.0, "high": 60500.0, "low": 59800.0, "close": 60100.0, "volume": 100.0},
+                    {"timestamp": 1781103600000, "open": 60100.0, "high": 60400.0, "low": 59900.0, "close": 60050.0, "volume": 90.0},
+                ],
+            }
+        ]
+    }
 
 
 def _balance_future_payload() -> dict:
@@ -297,7 +308,7 @@ def _mock_brief_endpoints(router: respx.Router) -> None:
     router.get(f"{BASE_URL}/api/indicators").mock(
         return_value=httpx.Response(200, json=_indicators_payload())
     )
-    router.get(f"{BASE_URL}/api/market").mock(
+    router.post(f"{BASE_URL}/api/market").mock(
         return_value=httpx.Response(200, json=_market_payload())
     )
     router.get(

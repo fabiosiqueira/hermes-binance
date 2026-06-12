@@ -1,0 +1,286 @@
+In less than 10 minutes, I'll teach you the only 1-minute scalping strategy
+the only 1-minute scalping strategy you'll ever need based on four simple
+you'll ever need based on four simple concepts to catch high reward to risk
+concepts to catch high reward to risk trades like these. Let's start. Now, to
+trades like these. Let's start. Now, to be able to learn and execute the
+be able to learn and execute the strategy the right way, we need to
+strategy the right way, we need to understand the basics. So, there's some
+understand the basics. So, there's some concepts that we need to understand
+concepts that we need to understand first. One of them is imbalances. Now,
+first. One of them is imbalances. Now, what is an imbalance in a simple way?
+what is an imbalance in a simple way? Most of you already know it. It's when
+Most of you already know it. It's when we have three candles. The first candle
+we have three candles. The first candle high does not overlap with the third
+high does not overlap with the third candle low. In this way, we have a
+candle low. In this way, we have a bullish fair value gap or imbalance. It
+bullish fair value gap or imbalance. It goes from here to here. And then in a
+goes from here to here. And then in a bearish scenario, whenever we have the
+bearish scenario, whenever we have the low of the first candle does not overlap
+low of the first candle does not overlap with the high of the third candle from
+with the high of the third candle from here to here. That is a bearish
+here to here. That is a bearish imbalance, and it usually gets filled
+imbalance, and it usually gets filled and pushed price lower. Not every time,
+and pushed price lower. Not every time, but we'll use this in a very specific
+but we'll use this in a very specific way, not just a typical way. So, this is
+way, not just a typical way. So, this is a bearish fair value gap, and this is a
+a bearish fair value gap, and this is a bullish fair value gap. Another concept
+bullish fair value gap. Another concept that we need to understand is structure.
+that we need to understand is structure. So, we're not trying to engage with the
+So, we're not trying to engage with the market anywhere, but we're trying to
+market anywhere, but we're trying to focus on high probability ranges,
+focus on high probability ranges, meaning that I want to see a break of
+meaning that I want to see a break of structure and a structure from here to
+structure and a structure from here to here or this range. This is the range
+here or this range. This is the range that I want to engage with. In another
+that I want to engage with. In another formation, we have a market structure
+formation, we have a market structure shift, meaning that we're going lower,
+shift, meaning that we're going lower, but then we flip bullish. This also
+but then we flip bullish. This also stays as a high probability range. So,
+stays as a high probability range. So, simply we want to identify the structure
+simply we want to identify the structure and look for the continuation of that
+and look for the continuation of that structure. The third concept is moving
+structure. The third concept is moving average. We're going to be using this
+average. We're going to be using this for the trend or for the bias. Now, the
+for the trend or for the bias. Now, the moving average is optional. You could
+moving average is optional. You could use this or any other way. We'll be
+use this or any other way. We'll be going over examples with the moving
+going over examples with the moving average and without it. Whenever we are
+average and without it. Whenever we are above the line, when the price action is
+above the line, when the price action is above, we're going to be using a 50
+above, we're going to be using a 50 moving average. Above it, we're bullish.
+moving average. Above it, we're bullish. Below it, we're bearish. The bias is
+Below it, we're bearish. The bias is going to be very simple to identify. And
+going to be very simple to identify. And then the last concept is highs and lows
+then the last concept is highs and lows or liquidity. Now, simply we need to
+or liquidity. Now, simply we need to understand that a high, whenever it's
+understand that a high, whenever it's taken, we're either going to be having a
+taken, we're either going to be having a continuation from it, meaning that we're
+continuation from it, meaning that we're going to be a broken above it and then
+going to be a broken above it and then continuation, or weakness and then
+continuation, or weakness and then continu- -ing lower. So, we need to
+continu- -ing lower. So, we need to understand the concept of liquidity. And
+understand the concept of liquidity. And we're going to be focusing on a specific
+we're going to be focusing on a specific type of liquidity, which is here, the
+type of liquidity, which is here, the inducement, meaning that I want to see a
+inducement, meaning that I want to see a bullish break of structure. I want to
+bullish break of structure. I want to see a low that did not go to a specific
+see a low that did not go to a specific key level. We're going to be simplifying
+key level. We're going to be simplifying this, no worries, but I want to see
+this, no worries, but I want to see price coming to that low again,
+price coming to that low again, continuing higher. So, we're going to be
+continuing higher. So, we're going to be focusing on this specific type of
+focusing on this specific type of liquidity. Now, the main goal of this
+liquidity. Now, the main goal of this strategy is very simple. It's to
+strategy is very simple. It's to identify a high probability continuation
+identify a high probability continuation setup on the 15- -minute, but with an
+setup on the 15- -minute, but with an entry on the 1-minute time frame. And
+entry on the 1-minute time frame. And you will understand why we're having two
+you will understand why we're having two time frames here to have a high reward
+time frames here to have a high reward to risk. A quick note that this works on
+to risk. A quick note that this works on any pair and any time of the day. Now,
+any pair and any time of the day. Now, as a gift, I have a free book that has
+as a gift, I have a free book that has all the steps, the checklist, and more
+all the steps, the checklist, and more details. You can have it for free, the
+details. You can have it for free, the link is below. Now, the setup is very
+link is below. Now, the setup is very simple. All I want to see is, first of
+simple. All I want to see is, first of all, identify a break of structure,
+all, identify a break of structure, meaning that now I'll be having a high
+meaning that now I'll be having a high probability range from here to here. So,
+probability range from here to here. So, now I do have a valid structure that I
+now I do have a valid structure that I could look for a continuation from after
+could look for a continuation from after the break of structure. Now, I could
+the break of structure. Now, I could also deal with market structure shift.
+also deal with market structure shift. You might be seeing that on the
+You might be seeing that on the examples. So, now we know that entering
+examples. So, now we know that entering from here will be a continuation.
+from here will be a continuation. Another thing I want to see in between
+Another thing I want to see in between this range is an imbalance. So, I want
+this range is an imbalance. So, I want to identify an imbalance. In this case,
+to identify an imbalance. In this case, it's a bearish range, meaning that I
+it's a bearish range, meaning that I want to see a bearish imbalance. And I
+want to see a bearish imbalance. And I want to see this high retracement coming
+want to see this high retracement coming into the imbalance, not fill it fully,
+into the imbalance, not fill it fully, and then going lower or getting very
+and then going lower or getting very close to the imbalance and then going
+close to the imbalance and then going lower. That is that we're going to be
+lower. That is that we're going to be using. That is the high that we're going
+using. That is the high that we're going to focus on. So, simply what I want to
+to focus on. So, simply what I want to see is a high probability range with a
+see is a high probability range with a break of structure, an imbalance, a high
+break of structure, an imbalance, a high that is near it or just at the beginning
+that is near it or just at the beginning of the imbalance or not filling the
+of the imbalance or not filling the imbalance fully. And then I want to
+imbalance fully. And then I want to ensure that I'm trading with a trend.
+ensure that I'm trading with a trend. So, I want the moving average to also go
+So, I want the moving average to also go lower and we're below the moving
+lower and we're below the moving average, meaning that now we do have an
+average, meaning that now we do have an alignment between the structure and the
+alignment between the structure and the moving average. So, the moment we have
+moving average. So, the moment we have all of these, we're going to be focusing
+all of these, we're going to be focusing on this high and we're going to enter
+on this high and we're going to enter from it using the 1-minute time frame,
+from it using the 1-minute time frame, using a specific entry confirmation. Let
+using a specific entry confirmation. Let me show you how. Now, this strategy is
+me show you how. Now, this strategy is very simple and it only applies to the
+very simple and it only applies to the 1-minute time frame. But if you want a
+1-minute time frame. But if you want a universal way to trade the market,
+universal way to trade the market, that's what I built in Edge School,
+that's what I built in Edge School, where everything is built around the
+where everything is built around the Edge model. Now, Edge model is the same
+Edge model. Now, Edge model is the same model behind the 10 to 1, 15 to 1 trades
+model behind the 10 to 1, 15 to 1 trades you've seen me take and share. If that's
+you've seen me take and share. If that's what you're looking for, you can check
+what you're looking for, you can check it out. Anyway, let's continue. Now,
+it out. Anyway, let's continue. Now, this is around the 15-minute chart. What
+this is around the 15-minute chart. What we need to do first is go to the
+we need to do first is go to the indicators and just type EMA. Go to this
+indicators and just type EMA. Go to this one and then go to the settings of this
+one and then go to the settings of this indicator and change this from 9 to 50
+indicator and change this from 9 to 50 and feel free to change the color as
+and feel free to change the color as well. And that's all we need for the
+well. And that's all we need for the setup. Now, the moment we're below the
+setup. Now, the moment we're below the moving average with valid structure, we
+moving average with valid structure, we can actually look for our setup. So, if
+can actually look for our setup. So, if you notice here, what we have is a break
+you notice here, what we have is a break of structure. So, we have a valid range.
+of structure. So, we have a valid range. We're below the moving average. We're
+We're below the moving average. We're even having a respect of another key
+even having a respect of another key level and the moving average going
+level and the moving average going lower.
+lower. There is no fair value gap here, but
+There is no fair value gap here, but there is one here that got partially
+there is one here that got partially filled. What we're going to be doing is
+filled. What we're going to be doing is marking this high, the high that filled
+marking this high, the high that filled the fair value gap for the first time
+the fair value gap for the first time partially. That is our specific key
+partially. That is our specific key level. So, we're going to be marking
+level. So, we're going to be marking this and taking it to the right. I want
+this and taking it to the right. I want to see a bullish candle taking the high
+to see a bullish candle taking the high and closing lower. I want to see the
+and closing lower. I want to see the closure. And in this time, this candle
+closure. And in this time, this candle takes the high and close lower. So, that
+takes the high and close lower. So, that is our trigger candle. The entry is
+is our trigger candle. The entry is going to be very simple. We're going to
+going to be very simple. We're going to take a rectangle, and that is what I
+take a rectangle, and that is what I call the rectangle method. I actually
+call the rectangle method. I actually have a full ebook about this. You can
+have a full ebook about this. You can access it for free. The link is going to
+access it for free. The link is going to be in the description. We're going to
+be in the description. We're going to take the rectangle, and in this case,
+take the rectangle, and in this case, because it's bullish, we're going to
+because it's bullish, we're going to take it from the closing price to the
+take it from the closing price to the wick. And I'm going to drag this to the
+wick. And I'm going to drag this to the right. So, simply taking the wick of
+right. So, simply taking the wick of this and then switching to the 1-minute
+this and then switching to the 1-minute time frame. The moment we close below
+time frame. The moment we close below this, we can enter with a stop loss
+this, we can enter with a stop loss above the rectangle, and that's it. So,
+above the rectangle, and that's it. So, price goes higher. If you notice, we
+price goes higher. If you notice, we still did not close below, and now we
+still did not close below, and now we close below. That is going to be our
+close below. That is going to be our entry. Stop loss goes above the high
+entry. Stop loss goes above the high here that's created, and then targeting
+here that's created, and then targeting the next level. Now, when it comes to
+the next level. Now, when it comes to targeting, you could be flexible here,
+targeting, you could be flexible here, but I'd say because we're with the
+but I'd say because we're with the trend, we can target this low here.
+trend, we can target this low here. Going back to the 15-minute, we already
+Going back to the 15-minute, we already entered. It's a market order, and now
+entered. It's a market order, and now playing the price action, going to the
+playing the price action, going to the target. Now, if you were able to
+target. Now, if you were able to identify your ranges without the moving
+identify your ranges without the moving average, then yes, you can do that. Uh
+average, then yes, you can do that. Uh the moving average has simplified.
+the moving average has simplified. However, sometime when the market is
+However, sometime when the market is ranging, it's going to be a bit
+ranging, it's going to be a bit confusing. So, if you can identify that,
+confusing. So, if you can identify that, so if I can say that, "Okay, you know
+so if I can say that, "Okay, you know what? We're in this range that is a
+what? We're in this range that is a break of structure, a break of
+break of structure, a break of structure, a break of structure. We're
+structure, a break of structure. We're bearish here." I'm going to be looking
+bearish here." I'm going to be looking for this high to be taken and then
+for this high to be taken and then entering after that, targeting the low.
+entering after that, targeting the low. So, for example, I can see that we have
+So, for example, I can see that we have this range pushing lower. Now, I want to
+this range pushing lower. Now, I want to look for a high that is inside of an
+look for a high that is inside of an imbalance. We don't have one here, but I
+imbalance. We don't have one here, but I don't have a rejection. But there is one
+don't have a rejection. But there is one here, for example. So, if I can say that
+here, for example. So, if I can say that I know that we're pushing here and I was
+I know that we're pushing here and I was not able to enter here. This is a push
+not able to enter here. This is a push to the downside. We do have an
+to the downside. We do have an imbalance, and this is the second touch
+imbalance, and this is the second touch into the imbalance. I'm going to take my
+into the imbalance. I'm going to take my rectangle. Even though this has no break
+rectangle. Even though this has no break of structure, but I'm just being
+of structure, but I'm just being flexible here in order to show you the
+flexible here in order to show you the different ways to use this. Now, why is
+different ways to use this. Now, why is this still valid? Because we're already
+this still valid? Because we're already bearish here, and we went here to
+bearish here, and we went here to respect the key level in here to
+respect the key level in here to continue lower. So, even if this has no
+continue lower. So, even if this has no break of structure, it's still with the
+break of structure, it's still with the direction. So, the rectangle going to
+direction. So, the rectangle going to 1-minute time frame. The moment we close
+1-minute time frame. The moment we close lower, entry here after the closure
+lower, entry here after the closure outside the rectangle, stop loss
+outside the rectangle, stop loss slightly above the rectangle, and then
+slightly above the rectangle, and then targeting the next level. In this case,
+targeting the next level. In this case, it only gave about 3 to 1. Actually
+it only gave about 3 to 1. Actually getting very close to the stop loss. If
+getting very close to the stop loss. If you put it exactly above the stop loss,
+you put it exactly above the stop loss, you might be out. 15-minute time frame.
+you might be out. 15-minute time frame. Let's see what happened. Do we get there
+Let's see what happened. Do we get there actually?
+actually? Maybe not. Okay, it goes there and it
+Maybe not. Okay, it goes there and it gave the profit. Now, you could do this
+gave the profit. Now, you could do this even focusing on the specific sessions
+even focusing on the specific sessions for the day. So, I'll start from 8:00
+for the day. So, I'll start from 8:00 and I'll try to see the direction of the
+and I'll try to see the direction of the day. So, my focus will be only from here
+day. So, my focus will be only from here to here for the day. And only from here
+to here for the day. And only from here to here for the day. I'm not going to
+to here for the day. I'm not going to focus on anything else. So, I'm going to
+focus on anything else. So, I'm going to take a look at this and I'll see. Do I
+take a look at this and I'll see. Do I have an imbalance for the day? For
+have an imbalance for the day? For example, here, we've been pushing higher
+example, here, we've been pushing higher with a break of structure. Now, we do
+with a break of structure. Now, we do have this imbalance. After a break of
+have this imbalance. After a break of structure, we have the first touch. The
+structure, we have the first touch. The second touch goes here and we close
+second touch goes here and we close bearish still. So, this is a no. We
+bearish still. So, this is a no. We close bearish. Now, simply we mark the
+close bearish. Now, simply we mark the rectangle here, which is over the wick.
+rectangle here, which is over the wick. The 1-minute time frame. The moment we
+The 1-minute time frame. The moment we close above, that is our entry. In this
+close above, that is our entry. In this case, the closure was huge. I'm not
+case, the closure was huge. I'm not usually going to enter from here. Maybe
+usually going to enter from here. Maybe if price retraces lower to here or maybe
+if price retraces lower to here or maybe here, I would take a setup. Otherwise,
+here, I would take a setup. Otherwise, I'm not involving with this. Okay, so it
+I'm not involving with this. Okay, so it goes very close to that one here. Okay,
+goes very close to that one here. Okay, I put it randomly, but I'm saying that
+I put it randomly, but I'm saying that we want to look for a retracement. And
+we want to look for a retracement. And after that, we can target a 15-minute
+after that, we can target a 15-minute level. So, what it is a valid 15-minute
+level. So, what it is a valid 15-minute level, I don't know, but it goes to 8 to
+level, I don't know, but it goes to 8 to 1. That is a huge one. So, simply what
+1. That is a huge one. So, simply what we're looking for is maybe the EMA as an
+we're looking for is maybe the EMA as an optional bias, or you could use a
+optional bias, or you could use a structure. So, something like this.
+structure. So, something like this. Whenever I have a structure, I have an
+Whenever I have a structure, I have an imbalance, I have a high near it. If we
+imbalance, I have a high near it. If we take that high with a weakness into the
+take that high with a weakness into the imbalance, I would say from here,
+imbalance, I would say from here, targeting the next 15-minute. That's all
+targeting the next 15-minute. That's all we need from this setup. The better you
+we need from this setup. The better you become with identifying the levels and
+become with identifying the levels and the structure, the higher the reward to
+the structure, the higher the reward to risk and win rate you're going to be
+risk and win rate you're going to be having. So, that's it for this video.
+having. So, that's it for this video. Make sure to check out Edge School, my
+Make sure to check out Edge School, my community, and my classes. And if you
+community, and my classes. And if you want to trade with me, make sure to hit
+want to trade with me, make sure to hit the like button and subscribe. That's
+the like button and subscribe. That's it, and I'll see you next one.

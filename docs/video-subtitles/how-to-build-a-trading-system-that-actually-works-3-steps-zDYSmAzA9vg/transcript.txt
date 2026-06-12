@@ -1,0 +1,526 @@
+In this video, I'll show you how to build your own trading strategy in only
+build your own trading strategy in only 20 minutes and in only three steps.
+20 minutes and in only three steps. Let's start. So, these are the three
+Let's start. So, these are the three steps and components that I use for 7
+steps and components that I use for 7 years of trading and until now in all my
+years of trading and until now in all my trading setups and strategies and they
+trading setups and strategies and they can actually be found in almost every
+can actually be found in almost every trading strategy. So, at least these
+trading strategy. So, at least these three, maybe more, but these three needs
+three, maybe more, but these three needs to be found in every trading strategy.
+to be found in every trading strategy. And actually, these are the same steps
+And actually, these are the same steps that I also made the edge model out of
+that I also made the edge model out of and this is the model I'm teaching my
+and this is the model I'm teaching my student now in its cool in my community.
+student now in its cool in my community. However, I'll be teaching you these
+However, I'll be teaching you these three steps so you can actually build
+three steps so you can actually build your own new strategy or you could
+your own new strategy or you could improve the one you already have by
+improve the one you already have by identifying your three main steps and
+identifying your three main steps and then it's going to be more clear. But,
+then it's going to be more clear. But, let's talk about the first step and that
+let's talk about the first step and that is the direction and bias. Now,
+is the direction and bias. Now, direction and bias, this step is all
+direction and bias, this step is all about one main question and for every
+about one main question and for every step, we're going to be covering one
+step, we're going to be covering one main question that's going to explain
+main question that's going to explain everything about this step. So, for this
+everything about this step. So, for this one, it's all about where is price
+one, it's all about where is price going? So, the main thing you want to
+going? So, the main thing you want to understand from this step and one of the
+understand from this step and one of the mistakes a lot of people do is doing
+mistakes a lot of people do is doing multiple things in one step, which is
+multiple things in one step, which is not going to work. So, for this specific
+not going to work. So, for this specific step, all we want to identify is where
+step, all we want to identify is where price is going. Is it going up or down?
+price is going. Is it going up or down? And that's it. So, this could be done by
+And that's it. So, this could be done by using market structure, by using this,
+using market structure, by using this, you know, finding a high probability
+you know, finding a high probability range, a sweep, POI, moving average and
+range, a sweep, POI, moving average and a lot of other things. So, again, this
+a lot of other things. So, again, this could be done by a lot of multiple ways,
+could be done by a lot of multiple ways, but the main thing is the direction
+but the main thing is the direction itself. Again, we could find it using
+itself. Again, we could find it using market structure or ranges or a sweep.
+market structure or ranges or a sweep. Now, if we take a look at this, we can
+Now, if we take a look at this, we can see that we failed to displace above a
+see that we failed to displace above a high and based on this, we can maybe
+high and based on this, we can maybe predict that price is going to go lower.
+predict that price is going to go lower. So, this is a sweep type. It's fake out
+So, this is a sweep type. It's fake out or failing to close above or below a
+or failing to close above or below a high or low. And then we have the market
+high or low. And then we have the market structure. We also have market
+structure. We also have market structure. So, for this one, based on
+structure. So, for this one, based on this, I can see we have a break of
+this, I can see we have a break of structure, we have a displacement and
+structure, we have a displacement and price going, you know, strongly above a
+price going, you know, strongly above a high. So, we close above and now what
+high. So, we close above and now what I'm thinking that we are going to go up,
+I'm thinking that we are going to go up, maybe until here and then go lower a bit
+maybe until here and then go lower a bit and then continue to the upside. So,
+and then continue to the upside. So, here the answer for this question, where
+here the answer for this question, where is price going? The answer is going up.
+is price going? The answer is going up. Now, here, where price is going? So, it
+Now, here, where price is going? So, it looks like we're creating uh lower lows
+looks like we're creating uh lower lows and then lower highs and in this case, I
+and then lower highs and in this case, I can see price maybe continuing to the
+can see price maybe continuing to the downside. And it's all based on this,
+downside. And it's all based on this, based on the big picture, what are we
+based on the big picture, what are we doing here? Are we going up or going
+doing here? Are we going up or going down? And then you answer this question.
+down? And then you answer this question. You could also find this using moving
+You could also find this using moving average. So, you could have two moving
+average. So, you could have two moving average, one uh slow and one is fast and
+average, one uh slow and one is fast and you can then find where price is
+you can then find where price is relative to the moving average or
+relative to the moving average or where's the placement of the you know,
+where's the placement of the you know, the price compared to the moving average
+the price compared to the moving average and then you can identify the direction
+and then you can identify the direction or the bias. So, it's all about what?
+or the bias. So, it's all about what? It's all about where is price going? And
+It's all about where is price going? And you could do this in multiple ways. Now,
+you could do this in multiple ways. Now, for this one, the final answer for this
+for this one, the final answer for this step is going to be, "Oh, I think we're
+step is going to be, "Oh, I think we're bullish or we're bearish." It does not
+bullish or we're bearish." It does not matter where price is going to react
+matter where price is going to react off. It does not matter where price is
+off. It does not matter where price is going to stop. Nothing matters. The only
+going to stop. Nothing matters. The only thing that matters is where are we
+thing that matters is where are we likely going to go to? Is it going to be
+likely going to go to? Is it going to be bullish or bearish? And that's it.
+bullish or bearish? And that's it. Before we continue, I've taken
+Before we continue, I've taken everything I've learned over the past 7
+everything I've learned over the past 7 years and put it into one place, Its
+years and put it into one place, Its Cool. Inside, you will get the full
+Cool. Inside, you will get the full blueprint to finally make it in trading,
+blueprint to finally make it in trading, including the exact strategy I use every
+including the exact strategy I use every day, the edge model. These are some of
+day, the edge model. These are some of the trades I've taken with my members.
+the trades I've taken with my members. You are welcome to join if you are ready
+You are welcome to join if you are ready to make the real change in your trading.
+to make the real change in your trading. Let's continue. Now, step two is key
+Let's continue. Now, step two is key level and think about this as this main
+level and think about this as this main question, where will price react? And
+question, where will price react? And you want to think about it this way. So,
+you want to think about it this way. So, even though we know that price is going
+even though we know that price is going up now, so we know we have a bullish
+up now, so we know we have a bullish break of structure here and we're about
+break of structure here and we're about to retrace lower, maybe and it's not
+to retrace lower, maybe and it's not that when I say we're bullish, that
+that when I say we're bullish, that means I'm going to enter now and
+means I'm going to enter now and anytime. It's not like that because
+anytime. It's not like that because trading is all about probabilities and
+trading is all about probabilities and about a good price position. So, from
+about a good price position. So, from this, what I can see happening is that,
+this, what I can see happening is that, okay, we're bullish now. That is the
+okay, we're bullish now. That is the first question that we answer and that
+first question that we answer and that is the first step. The second step is
+is the first step. The second step is where will price react? And from this
+where will price react? And from this range or you can also consider the main
+range or you can also consider the main range, maybe from here if price was
+range, maybe from here if price was going up, okay, and we have a low here.
+going up, okay, and we have a low here. We can see that we have a key level
+We can see that we have a key level here. This might be anything. This might
+here. This might be anything. This might be part of market structure. This could
+be part of market structure. This could be your Fibonacci zone. This could be
+be your Fibonacci zone. This could be any support or resistance level or
+any support or resistance level or anything, you know, fair value gap,
+anything, you know, fair value gap, anything that you use and feel free to
+anything that you use and feel free to use whatever you want. Uh for me, I do
+use whatever you want. Uh for me, I do use specific things. Now, here is a key
+use specific things. Now, here is a key level. There is another key level. There
+level. There is another key level. There is another key level. And you mark the
+is another key level. And you mark the ones that you can go with. So, I'm not
+ones that you can go with. So, I'm not suggesting that you go with all key
+suggesting that you go with all key levels. You look for the valid ones and
+levels. You look for the valid ones and the third step is actually going to help
+the third step is actually going to help you with that, too. So, I know that I
+you with that, too. So, I know that I have this key level, this one, this one,
+have this key level, this one, this one, this one. And I'm might go with this one
+this one. And I'm might go with this one because I think this is more valid and
+because I think this is more valid and maybe this one. And this is the
+maybe this one. And this is the question, where will price react? So, I
+question, where will price react? So, I say, "You know what? I think this one or
+say, "You know what? I think this one or this one." And I'm going to keep an eye
+this one." And I'm going to keep an eye at these two levels. Now, an example of
+at these two levels. Now, an example of that is this here. So, if I zoom in,
+that is this here. So, if I zoom in, what we have is price is going lower,
+what we have is price is going lower, going up, going lower and we see that we
+going up, going lower and we see that we have a huge price going lower, breaking
+have a huge price going lower, breaking structure. So, based on the market
+structure. So, based on the market structure, just based on the market
+structure, just based on the market structure itself, I can say that we are
+structure itself, I can say that we are about to go up now, but this is only a
+about to go up now, but this is only a retracement. The direction or the bias
+retracement. The direction or the bias or the answer for that question about
+or the answer for that question about the bias, where are we going? The answer
+the bias, where are we going? The answer is we're going bearish, we're going
+is we're going bearish, we're going lower. Now, where are we going lower
+lower. Now, where are we going lower from? And that is the answer of the key
+from? And that is the answer of the key levels. So, we have this key level here.
+levels. So, we have this key level here. We have this key level and we have this
+We have this key level and we have this one and we have this one and probably
+one and we have this one and probably other people, you know, different
+other people, you know, different traders will have different key levels
+traders will have different key levels depending on the
+depending on the criteria for the key level. What is the
+criteria for the key level. What is the key level itself? So, we do have
+key level itself? So, we do have multiple key levels here. Now, this is
+multiple key levels here. Now, this is where I think price might reverse from,
+where I think price might reverse from, maybe here and maybe here and maybe
+maybe here and maybe here and maybe here. And that is the second step.
+here. And that is the second step. That's it. So, now I do have the
+That's it. So, now I do have the direction, which is I think price is
+direction, which is I think price is going lower. And now, for the second
+going lower. And now, for the second step, I know where price could react off
+step, I know where price could react off and I could maybe take this one or take
+and I could maybe take this one or take this one, okay, and avoid maybe these or
+this one, okay, and avoid maybe these or take this one and this one, the highest
+take this one and this one, the highest two. And you have the freedom to pick
+two. And you have the freedom to pick any key level you want and you can
+any key level you want and you can develop the criteria because every step
+develop the criteria because every step that I'm teaching you here can be very
+that I'm teaching you here can be very simple and can be very complicated
+simple and can be very complicated depending on what is below it. So, for
+depending on what is below it. So, for example, for the key levels, I could
+example, for the key levels, I could have a lot of other criteria, but the
+have a lot of other criteria, but the main step is going to be identifying the
+main step is going to be identifying the key levels, identifying where price
+key levels, identifying where price could reverse from, okay?
+could reverse from, okay? [clears throat]
+[clears throat] Now, a key level in simple terms is
+Now, a key level in simple terms is where your bias is going to continue.
+where your bias is going to continue. So, if my bias here is bearish, where
+So, if my bias here is bearish, where could my bias continue? So, as price is
+could my bias continue? So, as price is going up, so price is going up, where
+going up, so price is going up, where could my bias continue? My bias is
+could my bias continue? My bias is bearish. So, where could price turn
+bearish. So, where could price turn bearish again? Maybe here and maybe
+bearish again? Maybe here and maybe here, to the lower side. And that is
+here, to the lower side. And that is what a key level is. Now, the third step
+what a key level is. Now, the third step is and it's the final one is the entry.
+is and it's the final one is the entry. Now, the key question for the entry is
+Now, the key question for the entry is when do you execute? So, if you go back
+when do you execute? So, if you go back to the direction, it's where is price
+to the direction, it's where is price going? So, it's about where and then for
+going? So, it's about where and then for the second step is again where it's
+the second step is again where it's going to react, okay? So, where it's
+going to react, okay? So, where it's going to, where it's going to react and
+going to, where it's going to react and now we are, you know, discussing when do
+now we are, you know, discussing when do you execute? So, when do you actually
+you execute? So, when do you actually enter the trade? Now, think about the
+enter the trade? Now, think about the third step is the confirmation if the
+third step is the confirmation if the key level is going to hold. So, this is
+key level is going to hold. So, this is the third step because let's say we have
+the third step because let's say we have three key levels and I actually think
+three key levels and I actually think all three are valid. I cannot just enter
+all three are valid. I cannot just enter at all three because some of them,
+at all three because some of them, because if I'm looking for the first
+because if I'm looking for the first one, so if I have three levels, if I'm
+one, so if I have three levels, if I'm looking only at the first one, that
+looking only at the first one, that means the other two are going to fail.
+means the other two are going to fail. Or if I'm setting a limit order at all
+Or if I'm setting a limit order at all of these, that means I have some doubts
+of these, that means I have some doubts about all of the key levels because some
+about all of the key levels because some of them are going to not work and some
+of them are going to not work and some of them are going to work. So, what is
+of them are going to work. So, what is the solution? Is looking for
+the solution? Is looking for confirmation at the key level. So,
+confirmation at the key level. So, confirmation again, it's if the key
+confirmation again, it's if the key level is going to hold. It's confirming
+level is going to hold. It's confirming if it's going to hold or not. Now, think
+if it's going to hold or not. Now, think about it this way. Let's say we have the
+about it this way. Let's say we have the first step here, which is what?
+first step here, which is what? Direction. So, I could establish the
+Direction. So, I could establish the direction using market structure. You
+direction using market structure. You can see we create a high, we go lower
+can see we create a high, we go lower inside of the main range and then we
+inside of the main range and then we break the high again. So, now we have a
+break the high again. So, now we have a break of structure, we have the first
+break of structure, we have the first step done. So, now we understand the
+step done. So, now we understand the where question is where we going? We're
+where question is where we going? We're going up. And the other question of the
+going up. And the other question of the step two is where are we going to react
+step two is where are we going to react off, okay? And the answer is maybe this
+off, okay? And the answer is maybe this key level. And there is no other key
+key level. And there is no other key level, maybe one here and maybe one
+level, maybe one here and maybe one here. But now, price comes to the key
+here. But now, price comes to the key level here. What are you going to do? In
+level here. What are you going to do? In order to confirm if this is a valid one,
+order to confirm if this is a valid one, is look for confirmation just inside
+is look for confirmation just inside here. So, here you want to look for
+here. So, here you want to look for confirmation and confirmation in simple
+confirmation and confirmation in simple words is the alignment of the lower time
+words is the alignment of the lower time frame entry with the key level itself.
+frame entry with the key level itself. So, here. And the alignment also in
+So, here. And the alignment also in other word, now the alignment or the Uh,
+other word, now the alignment or the Uh, entry can be in different ways. So, we
+entry can be in different ways. So, we could have the candle entry and that
+could have the candle entry and that means simply when price reach that key
+means simply when price reach that key level, what I want to see inside is a
+level, what I want to see inside is a simple candle. This could be an
+simple candle. This could be an engulfing candle. This could be a pin
+engulfing candle. This could be a pin bar or dodgy. For example, small body
+bar or dodgy. For example, small body and that means we could have weakness or
+and that means we could have weakness or strength. So, if price is coming to a
+strength. So, if price is coming to a bullish key level and I see this type of
+bullish key level and I see this type of candle, maybe it's telling me that there
+candle, maybe it's telling me that there is weakness and I could enter based on a
+is weakness and I could enter based on a candle and there's no problem with that.
+candle and there's no problem with that. You could also have a structure entry.
+You could also have a structure entry. Now, one thing is a structure entry
+Now, one thing is a structure entry could be just a candle entry on another
+could be just a candle entry on another time frame. So, if you're looking at two
+time frame. So, if you're looking at two different time frames, higher time frame
+different time frames, higher time frame could be just one candle and in lower
+could be just one candle and in lower time frame it could be a structure. Now,
+time frame it could be a structure. Now, structure entry is just simply looking
+structure entry is just simply looking for a market structure shift at the key
+for a market structure shift at the key level. So, we have a key level here.
+level. So, we have a key level here. When price reach that, give a clean
+When price reach that, give a clean structure, you could look for the
+structure, you could look for the continuation of a key level on the lower
+continuation of a key level on the lower time frame or just enter immediately
+time frame or just enter immediately here and then you can catch the move.
+here and then you can catch the move. So, it's all about what? Finding the
+So, it's all about what? Finding the alignment between the key level and the
+alignment between the key level and the entry itself. Whenever we have a key
+entry itself. Whenever we have a key level that is bullish, so in this
+level that is bullish, so in this example bullish and then I can see that
+example bullish and then I can see that when price reach that key level, it
+when price reach that key level, it turns out bullish. That means there is
+turns out bullish. That means there is alignment and that is the entry. Now,
+alignment and that is the entry. Now, one thing we need to actually apply is
+one thing we need to actually apply is the time frame alignment. So, for this
+the time frame alignment. So, for this specific thing, time frame alignment is
+specific thing, time frame alignment is very important. It's going to Now, you
+very important. It's going to Now, you could do all of this in one time frame.
+could do all of this in one time frame. However, it's going to result in lower
+However, it's going to result in lower reward to risk. Maybe maybe good win
+reward to risk. Maybe maybe good win rate, okay? But it's going to give you
+rate, okay? But it's going to give you much lower reward to risk. Maybe only
+much lower reward to risk. Maybe only third or actually maybe less of the
+third or actually maybe less of the reward to risk. So, if you have, you
+reward to risk. So, if you have, you know,
+know, let's say two to one two to one reward
+let's say two to one two to one reward to risk. With the time frame alignment,
+to risk. With the time frame alignment, you could take that to five to one six
+you could take that to five to one six to one or maybe more. Okay? Now, the
+to one or maybe more. Okay? Now, the first type of time frame alignment is
+first type of time frame alignment is this one. We're going to be using only
+this one. We're going to be using only higher time frame and lower time frame.
+higher time frame and lower time frame. So, for the higher time frame, we're
+So, for the higher time frame, we're going to be looking for the direction.
+going to be looking for the direction. That is step one and for the key level
+That is step one and for the key level and that is step two. For the lower time
+and that is step two. For the lower time frame, we're going to look for the
+frame, we're going to look for the entry. So, only using two time frames,
+entry. So, only using two time frames, which is higher time frame and lower
+which is higher time frame and lower time frame. Now, there is another type
+time frame. Now, there is another type where we're going to be using three
+where we're going to be using three different time frames. It's going to be
+different time frames. It's going to be higher time frame, intermediate time
+higher time frame, intermediate time frame and lower time frame. Direction
+frame and lower time frame. Direction for the first step with for the higher
+for the first step with for the higher time frame, then a key level and finally
+time frame, then a key level and finally an entry. And each of these steps is
+an entry. And each of these steps is going to be on a different time frame.
+going to be on a different time frame. For the time frame alignment, we're not
+For the time frame alignment, we're not going to be going over different and
+going to be going over different and random time frames. No, we have specific
+random time frames. No, we have specific time frame alignment to follow. So, if
+time frame alignment to follow. So, if you're using 4-hour as your higher time
+you're using 4-hour as your higher time frame, you're going to look for
+frame, you're going to look for 15-minute as your lower time frame,
+15-minute as your lower time frame, daily to 1-hour, weekly to 4-hour. As we
+daily to 1-hour, weekly to 4-hour. As we go lower here, the frequency of trades
+go lower here, the frequency of trades is going to be higher and the time to
+is going to be higher and the time to hold the trades is going to be lower.
+hold the trades is going to be lower. So, starting from here, this is more for
+So, starting from here, this is more for scalping and as you go up, you could
+scalping and as you go up, you could actually swing trades here and yeah,
+actually swing trades here and yeah, this is how it goes. So, make sure to
+this is how it goes. So, make sure to only use these and not just
+only use these and not just [clears throat] go off random time
+[clears throat] go off random time frames. So, now as an example, we're
+frames. So, now as an example, we're going to be looking at this the same
+going to be looking at this the same screenshot that I gave you earlier
+screenshot that I gave you earlier regarding the direction and key levels,
+regarding the direction and key levels, but now to put it all together. So, we
+but now to put it all together. So, we have direction going lower. Okay, we
+have direction going lower. Okay, we have a main breaker structure. Some
+have a main breaker structure. Some people could see this in a very
+people could see this in a very different way. That's why it's about a
+different way. That's why it's about a trading plan. It's about having the main
+trading plan. It's about having the main steps, but the criteria inside could be
+steps, but the criteria inside could be totally different. So, what what I could
+totally different. So, what what I could see here as a bearish, some people based
+see here as a bearish, some people based on different strategies could see it in
+on different strategies could see it in a different way. Could see it bullish,
+a different way. Could see it bullish, okay? So, for this one, I'm seeing this
+okay? So, for this one, I'm seeing this as a bearish with the key levels that I
+as a bearish with the key levels that I have. When I do have a lot of key
+have. When I do have a lot of key levels, I would maybe prefer to look for
+levels, I would maybe prefer to look for the two highest key levels or maybe
+the two highest key levels or maybe three. But we're going to keep an eye at
+three. But we're going to keep an eye at all of these. We're using 4-hour as our
+all of these. We're using 4-hour as our higher time frame. We're going to be
+higher time frame. We're going to be looking at 15-minute reaction of these
+looking at 15-minute reaction of these levels. So, now if I play the price
+levels. So, now if I play the price action here, as you can see, price is
+action here, as you can see, price is going up. Uh, then we have So, mainly
+going up. Uh, then we have So, mainly I'm not going to take this one, but
+I'm not going to take this one, but we're going to keep an eye at it, okay?
+we're going to keep an eye at it, okay? For the sake of the video. Now, we're
+For the sake of the video. Now, we're going to be looking for breaker
+going to be looking for breaker structure or market structure shift off
+structure or market structure shift off these levels, okay? Now, notice what
+these levels, okay? Now, notice what happened here. As price come into this
+happened here. As price come into this level, we had no market structure shift.
+level, we had no market structure shift. Price is going up and market structure
+Price is going up and market structure shift I would say is the kind of the
+shift I would say is the kind of the safest entry that you could have.
+safest entry that you could have. However, here what we have is price
+However, here what we have is price going up to this level, going lower,
+going up to this level, going lower, creating a low and then we have other
+creating a low and then we have other So, this is a strong level here where
+So, this is a strong level here where price closed below, okay? Also below
+price closed below, okay? Also below this level, the main one here and that
+this level, the main one here and that is a market structure shift. So, what
+is a market structure shift. So, what you could do here is mainly I would have
+you could do here is mainly I would have a limit order here, but price did not
+a limit order here, but price did not reach. Also at this level here, okay?
+reach. Also at this level here, okay? For the sake of the video, stop loss.
+For the sake of the video, stop loss. Uh, for this one, I think I'm going to
+Uh, for this one, I think I'm going to have a limit order here and then stop
+have a limit order here and then stop loss above the zone. Okay? And then
+loss above the zone. Okay? And then maybe looking for
+maybe looking for any target, okay? And then playing the
+any target, okay? And then playing the price action, we can see price goes
+price action, we can see price goes lower. Then I'm going to go to the
+lower. Then I'm going to go to the 4-hour very quick.
+4-hour very quick. And you can see Okay? Price started
+And you can see Okay? Price started going lower from there. Okay? So, I
+going lower from there. Okay? So, I think we get in here. I supposed, okay?
+think we get in here. I supposed, okay? Yes. So, we get an entry here and then
+Yes. So, we get an entry here and then we started going lower. So, only about
+we started going lower. So, only about uh, 2.5 was presented here. Then we go
+uh, 2.5 was presented here. Then we go to the next level, which is here.
+to the next level, which is here. And notice what happened. What we have
+And notice what happened. What we have is price going up. Okay? Going lower.
+is price going up. Okay? Going lower. That is breaker structure. Some people
+That is breaker structure. Some people would consider this risky. Some people
+would consider this risky. Some people would consider as a valid one. As we're
+would consider as a valid one. As we're going lower, where's the key level? This
+going lower, where's the key level? This is my one of my favorite ones, okay? And
+is my one of my favorite ones, okay? And then stop loss above the high and then
+then stop loss above the high and then targeting whatever. Now, for this one,
+targeting whatever. Now, for this one, it gave a huge five to one, okay? Let's
+it gave a huge five to one, okay? Let's see on the 4-hour. So, what validate
+see on the 4-hour. So, what validate this is the lower time frame alignment.
+this is the lower time frame alignment. Price started going lower aggressively
+Price started going lower aggressively and then actually continuing much more
+and then actually continuing much more lower. So, if you notice, this is eight
+lower. So, if you notice, this is eight to one. Now, price goes back again to
+to one. Now, price goes back again to the same level, okay? But actually
+the same level, okay? But actually actually another level that I can see
+actually another level that I can see here as well. Okay, that is another one
+here as well. Okay, that is another one here. We go to 15-minute time frame.
+here. We go to 15-minute time frame. You notice as we go up here, we respect
+You notice as we go up here, we respect that one. Now, if you wanted, you could
+that one. Now, if you wanted, you could take engulfing candle. You could take
+take engulfing candle. You could take any confirmation that you can
+any confirmation that you can confirm here. Any confirmation entry
+confirm here. Any confirmation entry that you prefer. So, now price is going
+that you prefer. So, now price is going lower. There's no clean breaker
+lower. There's no clean breaker structure until here.
+structure until here. Okay, we have a breaker structure and
+Okay, we have a breaker structure and then price started going lower. What is
+then price started going lower. What is a key level that you can take here? That
+a key level that you can take here? That is a key level here, okay? You have an
+is a key level here, okay? You have an imbalance as well and then this is not
+imbalance as well and then this is not telling you that I'm going to take my
+telling you that I'm going to take my trade from here. It's about how to find
+trade from here. It's about how to find the confirmation. Okay, and how to align
+the confirmation. Okay, and how to align the key level even if it's not, you
+the key level even if it's not, you know, if it's not going to continue to
+know, if it's not going to continue to the lower side, but still going to give
+the lower side, but still going to give some reaction that you can get a lot of
+some reaction that you can get a lot of higher reward to risk out of it, okay?
+higher reward to risk out of it, okay? So, this is how you do it. You find the
+So, this is how you do it. You find the alignment between the two. Now, I'm just
+alignment between the two. Now, I'm just curious to see what's going to happen at
+curious to see what's going to happen at the
+the the level I'm having above. Do you see?
+the level I'm having above. Do you see? I know that the direction is lower. It
+I know that the direction is lower. It might not go lower because now I can see
+might not go lower because now I can see that price is trying to go up and trying
+that price is trying to go up and trying to go up. So, it might not be the, you
+to go up. So, it might not be the, you know, the move that price is going to go
+know, the move that price is going to go here and then continue lower breaking
+here and then continue lower breaking structure. Maybe not like this. Maybe
+structure. Maybe not like this. Maybe just going inside this main range and
+just going inside this main range and then continuing higher, but I can still
+then continuing higher, but I can still see based on the key levels that price
+see based on the key levels that price is going to give reaction and then
+is going to give reaction and then continue in either direction and it does
+continue in either direction and it does not matter. So, we can see here price is
+not matter. So, we can see here price is approaching the key level, okay?
+approaching the key level, okay? [clears throat] Now, it's going to the
+[clears throat] Now, it's going to the key level. Now, let's see the 15-minutes
+key level. Now, let's see the 15-minutes if we have any breaker structure, okay?
+if we have any breaker structure, okay? So, as price come in, you know, when the
+So, as price come in, you know, when the first retest, no breaker structure. Now,
+first retest, no breaker structure. Now, based on what I see here, I can see that
+based on what I see here, I can see that there is a lot of weakness happening.
+there is a lot of weakness happening. So, there is still no breaker structure
+So, there is still no breaker structure or market structure shift, which is
+or market structure shift, which is going to be here or maybe here for more
+going to be here or maybe here for more confirmed one. However, what I can see
+confirmed one. However, what I can see happening is that this is some there's
+happening is that this is some there's some weakness here and you can take this
+some weakness here and you can take this as a risky entry, but you need to have a
+as a risky entry, but you need to have a bit of a wide stop loss because this is
+bit of a wide stop loss because this is again a risky one and it does not
+again a risky one and it does not there's no confirmation that price is
+there's no confirmation that price is already breaking structure. So, this
+already breaking structure. So, this could be a bit risky, okay? And you can
+could be a bit risky, okay? And you can take a trade here and then maybe add
+take a trade here and then maybe add more with with another confirmation,
+more with with another confirmation, which could be a market structure shift.
+which could be a market structure shift. So, let's see what happened. Price
+So, let's see what happened. Price actually going up, okay?
+actually going up, okay? So, very close a bit close to the stop
+So, very close a bit close to the stop loss.
+loss. Now, what happened here is
+Now, what happened here is price takes age of high, started going
+price takes age of high, started going lower. This could be This is an
+lower. This could be This is an engulfing candle. You could have also
+engulfing candle. You could have also taken this one if you trade candles.
+taken this one if you trade candles. Okay?
+Okay? And then we have the main breaker
+And then we have the main breaker structure, which I said here. Breaker
+structure, which I said here. Breaker structure, you could take the
+structure, you could take the continuation of this imbalance as an
+continuation of this imbalance as an example. Okay, and same stop loss. So,
+example. Okay, and same stop loss. So, you see a lot of different confirmations
+you see a lot of different confirmations that you can take, but each one needs to
+that you can take, but each one needs to be taken with a
+be taken with a kind of logical stop loss compared and
+kind of logical stop loss compared and relative to the confirmation itself.
+relative to the confirmation itself. Okay, so now looking at the 4-hour now,
+Okay, so now looking at the 4-hour now, take a look at how these are very nice
+take a look at how these are very nice entries. So, even though price was still
+entries. So, even though price was still kind of continuing to the upside, but
+kind of continuing to the upside, but these key levels give you higher reward
+these key levels give you higher reward to risk still. And that's it for the
+to risk still. And that's it for the video. All you need is to identify the
+video. All you need is to identify the three steps and what goes below them and
+three steps and what goes below them and you will have a trading plan. That's it
+you will have a trading plan. That's it for the video. Make sure to hit the like
+for the video. Make sure to hit the like button, subscribe to the channel, leave
+button, subscribe to the channel, leave a comment, and then make sure to check
+a comment, and then make sure to check out It's Cool, my community, if you want
+out It's Cool, my community, if you want to check my classes and trade with me.
+to check my classes and trade with me. That's it and I'll see you next one.
+That's it and I'll see you next one. Bye-bye.

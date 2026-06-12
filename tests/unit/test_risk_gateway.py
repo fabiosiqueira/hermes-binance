@@ -49,7 +49,19 @@ def _indicators_payload() -> dict:
 
 
 def _market_payload() -> dict:
-    return {"indicators": {"RSI": 55.0}}
+    # POST /api/market → {timeframes:[{interval, indicators, candles}]}.
+    return {
+        "timeframes": [
+            {
+                "interval": "15m",
+                "indicators": {"RSI": 55.0},
+                "candles": [
+                    {"timestamp": 1781100900000, "open": 60000.0, "high": 60500.0, "low": 59800.0, "close": 60100.0, "volume": 100.0},
+                    {"timestamp": 1781101800000, "open": 60100.0, "high": 60300.0, "low": 59900.0, "close": 60050.0, "volume": 90.0},
+                ],
+            }
+        ]
+    }
 
 
 def _balance_future_payload() -> dict:
@@ -71,7 +83,7 @@ def _mock_brief_endpoints(router: respx.Router) -> None:
     router.get(f"{BASE_URL}/api/indicators").mock(
         return_value=httpx.Response(200, json=_indicators_payload())
     )
-    router.get(f"{BASE_URL}/api/market").mock(
+    router.post(f"{BASE_URL}/api/market").mock(
         return_value=httpx.Response(200, json=_market_payload())
     )
     router.get(
@@ -201,6 +213,29 @@ def test_handle_brief_cacheia_no_redis(respx_mock, monkeypatch, redis_client, ob
     assert result["market"]["symbol"] == "BTCUSDT"
     # Brief cacheado no Redis sob a chave por símbolo.
     assert redis_client.get(BRIEF_KEY) is not None
+
+
+@respx.mock
+def test_handle_brief_espelha_no_redis_do_agente(respx_mock, monkeypatch, redis_client, obs):
+    """Dual-write: brief vai p/ o risk-redis (autoritativo, o gate relê) E p/ o
+    espelho binance-redis (o agente lê redis-first). Conteúdo idêntico nos dois."""
+    _setup_env(monkeypatch)
+    _mock_brief_endpoints(respx_mock)
+    brief_mirror = fakeredis.FakeStrictRedis(decode_responses=True)
+
+    result = handle_brief(
+        symbol="BTCUSDT",
+        timeframe="15m",
+        mode=ExecutionMode.DRY_RUN,
+        redis_client=redis_client,
+        observability=obs,
+        brief_mirror=brief_mirror,
+    )
+
+    assert result["market"]["symbol"] == "BTCUSDT"
+    # Autoritativo (risk-redis) e espelho (binance-redis) têm o mesmo brief serializado.
+    assert redis_client.get(BRIEF_KEY) is not None
+    assert brief_mirror.get(BRIEF_KEY) == redis_client.get(BRIEF_KEY)
 
 
 # --- Happy path DRY_RUN: brief → execute via cache → ordem+stop → estado/métricas ---

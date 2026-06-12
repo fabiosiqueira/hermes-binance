@@ -59,9 +59,9 @@ Condensado dos vídeos (incluindo 12h ICT/SMC course, pillars, math, structure, 
 - **Mindset execução:** Mastery over money (skill primeiro, dinheiro depois — como médico/atleta). Meta real = buy low sell high (ou reverso), não prever topo/fundo ou impressionar. Processo > outcome. Uma pergunta que muda tudo: "Qual a ÚNICA coisa que sei que estou fazendo errado e, se consertada, mudaria meu trading para sempre?"
 - **Na prática (brief → proposal) — redis-first + camada determinística:** 
   1. Rode `python scripts/strategist_cycle.py brief`. O gateway grava o brief em Redis (`binance:strategist:brief:<SYMBOL>`). O ciclo roda o mulham_analyzer que grava os sinais determinísticos (high_prob_ranges via W+S, rect_candidates, cct, material_change, signature) em Redis (`binance:strategist:mulham:<SYMBOL>`). Tudo via REDIS_HOST/REDIS_PORT do ambiente.
-  2. Leia via Redis (redis-first, obrigatório): GET `binance:strategist:brief:<SYMBOL>` e GET `binance:strategist:mulham:<SYMBOL>`. Use redis-cli ou Python com os env vars. Os arquivos em workspace/ são artefatos do thin client (compatibilidade).
+  2. Leia via Redis (redis-first, obrigatório, sem filesystem): GET `binance:strategist:brief:<SYMBOL>` e GET `binance:strategist:mulham:<SYMBOL>`. Use redis-cli ou Python com os env vars.
   3. Trate os sinais Redis como **fato** determinístico. LLM só faz o overlay de alto nível: dado estes ranges/candidates + portfólio/risk_state atual + dogmas, qual (se algum) eu ativo agora, sizing exato, automations, timing?
-  4. Gere o dict da StrategyProposal. Faça SET no Redis sob `binance:strategist:proposal:<SYMBOL>` (use REDIS_* env, TTL curto). O arquivo proposal.json é opcional para debug; o fluxo oficial é Redis.
+  4. Gere o dict da StrategyProposal. Faça SET no Redis sob `binance:strategist:proposal:<SYMBOL>` (use REDIS_* env, TTL curto). O handoff é Redis — nunca arquivo.
   5. Rode `python scripts/strategist_cycle.py execute redis:binance:strategist:proposal:<SYMBOL>` (cycle puxa do Redis e manda pro gateway).
   6. Se `material_change=false` ou signature similar, produza mínima. Cite fontes Redis no reasoning.
   Adapta para futures 24/7 BTCUSDT como antes. Uso catálogo do brief para automations.

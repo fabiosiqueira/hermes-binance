@@ -5,9 +5,10 @@ mulham_analyzer.py — Camada determinística dos ensinamentos de @MulhamTrading
 Roda sobre o Brief (principalmente market.candles) e produz sinais estruturados
 que o LLM deve consumir ANTES de qualquer raciocínio caro.
 
-Uso:
-  python scripts/mulham_analyzer.py --brief workspace/brief.json
-  python scripts/mulham_analyzer.py --brief workspace/brief.json --output workspace/mulham_signals.json
+Uso (redis-first, sem filesystem):
+  python scripts/mulham_analyzer.py --symbol BTCUSDT
+  (lê o brief de binance:strategist:brief:<symbol> e grava os sinais em
+   binance:strategist:mulham:<symbol>, ambos no Redis do agente via REDIS_HOST/PORT)
 
 O output é 100% determinístico (sem LLM). Inclui:
 - bias atual (via structure + CCT)
@@ -25,8 +26,9 @@ Não depende de estado externo além do brief fornecido. Usa apenas stdlib + sch
 
 import argparse
 import json
+import os
+import sys
 from dataclasses import dataclass, asdict
-from pathlib import Path
 from typing import Any
 
 from schemas import Brief, Candle
@@ -67,11 +69,6 @@ class MulhamSignals:
     material_change: bool
     signature: str
     notes: list[str]
-
-
-def load_brief(path: Path) -> Brief:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    return Brief.model_validate(data)
 
 
 def _swing_points(candles: list[Candle], lookback: int = 5) -> list[tuple[int, str, float]]:
@@ -330,21 +327,51 @@ def analyze(brief: Brief) -> MulhamSignals:
     )
 
 
-def main(argv: list[str] | None = None) -> int:
+def _build_redis():
+    """Cliente Redis do agente (binance-redis) a partir do env REDIS_HOST/REDIS_PORT."""
+    import redis
+
+    host = os.environ.get("REDIS_HOST", "redis")
+    port = int(os.environ.get("REDIS_PORT", "6379"))
+    return redis.Redis(host=host, port=port, decode_responses=True)
+
+
+def load_brief_from_redis(redis_client: Any, symbol: str) -> Brief | None:
+    """Lê o brief espelhado pelo gateway em binance:strategist:brief:<symbol>.
+
+    Retorna None quando a chave está ausente/expirada (handoff redis-first sem brief).
+    """
+    raw = redis_client.get(f"binance:strategist:brief:{symbol}")
+    if raw is None:
+        return None
+    return Brief.model_validate_json(raw)
+
+
+def main(argv: list[str] | None = None, *, redis_client: Any = None) -> int:
+    """Analyzer redis-first: lê o brief do Redis (espelho do gateway) e grava os sinais
+    Mulham no Redis. Sem filesystem — o handoff é 100% Redis (binance-redis).
+    """
     parser = argparse.ArgumentParser(description="Deterministic Mulham Trading pre-analyzer for Hermes Briefs.")
-    parser.add_argument("--brief", required=True, help="Path to brief.json")
-    parser.add_argument("--output", default=None, help="Optional path to write JSON signals (default: stdout)")
+    parser.add_argument("--symbol", required=True, help="Symbol cujo brief ler do Redis (ex.: BTCUSDT)")
     args = parser.parse_args(argv)
 
-    brief_path = Path(args.brief)
-    brief = load_brief(brief_path)
+    r = redis_client if redis_client is not None else _build_redis()
+
+    brief = load_brief_from_redis(r, args.symbol)
+    if brief is None:
+        print(
+            json.dumps({"error": "brief_missing", "symbol": args.symbol}),
+            file=sys.stderr,
+        )
+        return 1
+
     signals = analyze(brief)
 
     out = {
         "bias": signals.bias,
         "bias_method": signals.bias_method,
-        "high_prob_ranges": [asdict(r) for r in signals.high_prob_ranges],
-        "rect_candidates": [asdict(r) for r in signals.rect_candidates],
+        "high_prob_ranges": [asdict(r_) for r_ in signals.high_prob_ranges],
+        "rect_candidates": [asdict(r_) for r_ in signals.rect_candidates],
         "cct_last": signals.cct_last,
         "material_change": signals.material_change,
         "signature": signals.signature,
@@ -354,31 +381,14 @@ def main(argv: list[str] | None = None) -> int:
         "timeframe": brief.market.timeframe,
     }
 
-    if args.output:
-        Path(args.output).write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(args.output)
-    else:
-        print(json.dumps(out, indent=2, ensure_ascii=False))
+    # Persistência redis-first dos sinais (binance:strategist:mulham:<symbol>) + chaves
+    # auxiliares de detecção rápida de mudança. O agente consome tudo via Redis.
+    key = f"binance:strategist:mulham:{out['symbol']}"
+    r.set(key, json.dumps(out, ensure_ascii=False), ex=3600 * 6)
+    r.set(f"{key}:signature", out["signature"], ex=3600 * 6)
+    r.set(f"{key}:material_change", str(out["material_change"]).lower(), ex=3600 * 6)
 
-    # Redis-first persistence for the signals (using REDIS_HOST/REDIS_PORT from env, per AGENTS.md invariant).
-    # The gateway already puts the brief under binance:strategist:brief:<symbol>.
-    # We put the deterministic Mulham analysis under binance:strategist:mulham:<symbol>.
-    # This allows the agent to consume both via Redis (no reliance on workspace/ files for the handoff).
-    # File write (when --output given) is kept for cycle stdout contract and local debugging.
-    try:
-        import os
-        import redis
-        host = os.environ.get("REDIS_HOST", "redis")
-        port = int(os.environ.get("REDIS_PORT", "6379"))
-        r = redis.Redis(host=host, port=port, decode_responses=True)
-        key = f"binance:strategist:mulham:{out['symbol']}"
-        r.set(key, json.dumps(out, ensure_ascii=False), ex=3600 * 6)
-        # Convenience keys for fast change detection (no need to parse full JSON)
-        r.set(f"binance:strategist:mulham:{out['symbol']}:signature", out["signature"], ex=3600 * 6)
-        r.set(f"binance:strategist:mulham:{out['symbol']}:material_change", str(out["material_change"]).lower(), ex=3600 * 6)
-    except Exception:
-        pass  # Redis best-effort; workspace file (if requested) still available
-
+    print(key)
     return 0
 
 

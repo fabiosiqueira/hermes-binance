@@ -48,6 +48,10 @@ services:
       HERMES_DATA_DIR: /opt/data
       REDIS_HOST: risk-redis
       REDIS_PORT: "6379"
+      # Espelho do brief no Redis do agente (serviço `redis`) p/ o handoff redis-first;
+      # cópia autoritativa segue no risk-redis privado.
+      BRIEF_MIRROR_REDIS_HOST: redis
+      BRIEF_MIRROR_REDIS_PORT: "6379"
     env_file:
       - hermes/.env
     networks:

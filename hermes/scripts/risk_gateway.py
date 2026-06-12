@@ -5,10 +5,11 @@
 # POST /execute neste serviço (autenticado por GATEWAY_TOKEN). O gate (risk_engine),
 # o assert_testnet e o emergency_stop rodam AQUI — o agente não tem rota de bypass.
 #
-# Arquitetura idêntica ao ciclo in-process (strategist_cycle), só que o brief não vive
-# mais em workspace/brief.json: handle_brief cacheia o Brief no Redis
-# (binance:strategist:brief:<symbol>, TTL BRIEF_CACHE_TTL_SECONDS) e handle_execute o
-# relê de lá. Brief ausente/expirado → {"executed": False, "reason": "brief_missing"}.
+# Arquitetura idêntica ao ciclo in-process (strategist_cycle), handoff 100% Redis (sem
+# filesystem): handle_brief cacheia o Brief no Redis (binance:strategist:brief:<symbol>,
+# TTL BRIEF_CACHE_TTL_SECONDS) — cópia AUTORITATIVA no risk-redis privado, que
+# handle_execute relê; e, via brief_mirror, uma cópia no binance-redis do agente p/
+# consumo redis-first. Brief ausente/expirado → {"executed": False, "reason": "brief_missing"}.
 #
 # Fronteiras de I/O (DI real, mocks só aqui nos testes): httpx via BetraderClient,
 # Redis via cliente injetável, observability injetável. `on_error(type)` é o ponto onde
@@ -85,6 +86,7 @@ def handle_brief(
     mode: ExecutionMode,
     redis_client: object,
     observability: Observability,
+    brief_mirror: object = None,
 ) -> dict:
     """Monta o Brief (replica _cmd_brief) e o cacheia no Redis com TTL.
 
@@ -92,6 +94,12 @@ def handle_brief(
     serializado é cacheado em binance:strategist:brief:<symbol> (TTL =
     BRIEF_CACHE_TTL_SECONDS, default 900s) para o handle_execute reler. Retorna o
     Brief.model_dump().
+
+    Dual-write: a cópia em `redis_client` (risk-redis, rede privada) é a AUTORITATIVA
+    — é a que o handle_execute relê para validar a proposal, e o agente não a alcança
+    (não pode forjar equity/preço para furar o gate). Quando `brief_mirror`
+    (binance-redis, rede do agente) é fornecido, o mesmo brief é espelhado lá para o
+    consumo redis-first do agente/mulham. O espelho é informacional: o gate nunca o lê.
     """
     client = BetraderClient.from_env(on_error=observability.record_error)
     try:
@@ -102,7 +110,15 @@ def handle_brief(
         client.close()
 
     ttl = int(os.environ.get("BRIEF_CACHE_TTL_SECONDS", "900"))
-    redis_client.set(_brief_key(symbol), brief.model_dump_json(), ex=ttl)  # type: ignore[attr-defined]
+    serialized = brief.model_dump_json()
+    redis_client.set(_brief_key(symbol), serialized, ex=ttl)  # type: ignore[attr-defined]
+    if brief_mirror is not None:
+        # Espelho best-effort: falha não invalida o brief (o gate usa a cópia
+        # autoritativa). Falha é alertável via record_error, nunca silenciosa.
+        try:
+            brief_mirror.set(_brief_key(symbol), serialized, ex=ttl)  # type: ignore[attr-defined]
+        except Exception:  # noqa: BLE001 — fronteira Redis; surfaced via métricas
+            observability.record_error("brief_mirror_error")
     return brief.model_dump(mode="json")
 
 
@@ -234,10 +250,27 @@ def _build_redis():
     return redis.Redis(host=host, port=port, decode_responses=True)
 
 
+def _build_brief_mirror():
+    """Cliente Redis do espelho do brief (binance-redis, rede do agente).
+
+    Lê BRIEF_MIRROR_REDIS_HOST/PORT. Ausente → None (sem espelho; o brief continua
+    autoritativo no risk-redis, mas o agente não o vê redis-first). decode_responses
+    para escrever a mesma string serializada do cache autoritativo.
+    """
+    host = os.environ.get("BRIEF_MIRROR_REDIS_HOST", "").strip()
+    if not host:
+        return None
+    import redis
+
+    port = int(os.environ.get("BRIEF_MIRROR_REDIS_PORT", "6379"))
+    return redis.Redis(host=host, port=port, decode_responses=True)
+
+
 def start_gateway(
     port: int = _DEFAULT_GATEWAY_PORT,
     *,
     redis_client: object = None,
+    brief_mirror: object = None,
     observability: Observability = None,  # type: ignore[assignment]
     on_error: Callable[[str], None] | None = None,
 ) -> None:
@@ -252,6 +285,7 @@ def start_gateway(
     del token  # nunca usado/logado aqui; require_auth o relê por request.
 
     redis_client = redis_client if redis_client is not None else _build_redis()
+    brief_mirror = brief_mirror if brief_mirror is not None else _build_brief_mirror()
     observability = observability if observability is not None else Observability()
 
     # Resiliência: re-popula métricas do estado persistido pós-restart antes de servir.
@@ -318,6 +352,7 @@ def start_gateway(
                     mode=mode,
                     redis_client=redis_client,
                     observability=observability,
+                    brief_mirror=brief_mirror,
                 )
             except BetraderError as exc:
                 _notify(exc.type)

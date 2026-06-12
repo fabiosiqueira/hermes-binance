@@ -1,0 +1,486 @@
+Daily bias is one of the most complicated trading concept, when in
+complicated trading concept, when in reality all you need is one single
+reality all you need is one single candle to identify the bias, where to
+candle to identify the bias, where to enter and where to target. That's what I
+enter and where to target. That's what I show you in this video, as well as what
+show you in this video, as well as what specific candle to use. First of all,
+specific candle to use. First of all, you don't always need daily bias and
+you don't always need daily bias and that is a mistake and misunderstanding
+that is a mistake and misunderstanding of daily bias.
+of daily bias. It is just that this word has been uh
+It is just that this word has been uh repeated by a lot of people when the
+repeated by a lot of people when the understanding is not there. So, here
+understanding is not there. So, here we're talking about daily bias, but what
+we're talking about daily bias, but what if you're using a 1-minute time frame or
+if you're using a 1-minute time frame or 15-minute time frame or hourly or
+15-minute time frame or hourly or 4-hour? So, if you're using the 4-hour
+4-hour? So, if you're using the 4-hour time frame, you don't actually need a
+time frame, you don't actually need a daily bias. It's the opposite here,
+daily bias. It's the opposite here, you're trading a single 4-hour candle
+you're trading a single 4-hour candle or, you know, a 4-hour structure. So,
+or, you know, a 4-hour structure. So, daily bias meaning that I'm looking at
+daily bias meaning that I'm looking at the bias for the day,
+the bias for the day, it's not going to be the most important
+it's not going to be the most important thing. And the same thing goes for the
+thing. And the same thing goes for the 1-minute time frame. Maybe in the
+1-minute time frame. Maybe in the middle, yes, but on the extremes, on the
+middle, yes, but on the extremes, on the 4-hour and maybe above and on the
+4-hour and maybe above and on the 1-minute and below, we don't need the
+1-minute and below, we don't need the daily bias. It's going to be irrelevant
+daily bias. It's going to be irrelevant and there is not alignment. So, what we
+and there is not alignment. So, what we need to understand is that instead of
+need to understand is that instead of using daily bias, we can go with bias.
+using daily bias, we can go with bias. And then, if we're looking at the 4-hour
+And then, if we're looking at the 4-hour time frame, we're going to be looking at
+time frame, we're going to be looking at the specific bias that is aligned with
+the specific bias that is aligned with the 4-hour. And the same goes for the
+the 4-hour. And the same goes for the 1-minute time frame. So, for the
+1-minute time frame. So, for the 1-minute time frame as an example, I'm
+1-minute time frame as an example, I'm going to be using the 15-minute bias
+going to be using the 15-minute bias or maybe the hourly. We could be
+or maybe the hourly. We could be flexible here a bit. Now, if your entry
+flexible here a bit. Now, if your entry is on the 15-minute time frame, you
+is on the 15-minute time frame, you would want to look for the bias of the
+would want to look for the bias of the 4-hour time frame. And that's how it
+4-hour time frame. And that's how it goes. For the hourly, you'll be using
+goes. For the hourly, you'll be using the daily bias here. So, if you're using
+the daily bias here. So, if you're using the hourly, maybe the 15-minute, you
+the hourly, maybe the 15-minute, you could be flexible here, but these are
+could be flexible here, but these are the time frames I recommend. The hourly,
+the time frames I recommend. The hourly, now you need the daily bias. But, would
+now you need the daily bias. But, would the daily bias work with the 4-hour time
+the daily bias work with the 4-hour time frame? If you're entering on the 4-hour
+frame? If you're entering on the 4-hour time frame, it's not going to work. So,
+time frame, it's not going to work. So, here you need to be dealing with the
+here you need to be dealing with the weekly bias to enter based on the 4-hour
+weekly bias to enter based on the 4-hour time frame. And here, it's all about the
+time frame. And here, it's all about the alignment and you need to understand the
+alignment and you need to understand the frequency of the trades. So, as we take
+frequency of the trades. So, as we take the misconception and misunderstanding
+the misconception and misunderstanding about bias to the side, all we need now
+about bias to the side, all we need now is one candle and this could be in
+is one candle and this could be in different time frames. But, this one
+different time frames. But, this one candle will give us the bias, the entry,
+candle will give us the bias, the entry, or at least where to enter and where to
+or at least where to enter and where to target it. So, the concept that we'll be
+target it. So, the concept that we'll be using here is CCT or candle continuity
+using here is CCT or candle continuity theory. I've been talking about this
+theory. I've been talking about this concept for years now and you can go to
+concept for years now and you can go to my oldest videos and you'll see that.
+my oldest videos and you'll see that. So, what is CCT? In simple terms, CCT is
+So, what is CCT? In simple terms, CCT is trading the next candle based on the
+trading the next candle based on the previous one. When I have two candles as
+previous one. When I have two candles as my framework, I'll be using the current
+my framework, I'll be using the current one or the one that I have for now in
+one or the one that I have for now in order to trade the next one. Or, you
+order to trade the next one. Or, you could actually look at this also in
+could actually look at this also in another way, which is how the new candle
+another way, which is how the new candle opens in relation to the prior one. Why?
+opens in relation to the prior one. Why? Because the opening will tell us if
+Because the opening will tell us if we're having a continuation or reversal,
+we're having a continuation or reversal, if we're going to be going bullish or
+if we're going to be going bullish or bearish. It's all based on how the
+bearish. It's all based on how the candle open. Now, just to be clear,
+candle open. Now, just to be clear, there is a full CCT course on its core
+there is a full CCT course on its core on my community and classes that works
+on my community and classes that works actually with the edge model. So, for
+actually with the edge model. So, for more details on how to put it together,
+more details on how to put it together, feel free to check out the CCT course.
+feel free to check out the CCT course. And the CCT types, meaning that we'll be
+And the CCT types, meaning that we'll be having two main types. The first one is
+having two main types. The first one is continuation. It's when we are going in
+continuation. It's when we are going in the same direction and how is that
+the same direction and how is that exactly happening? We have a bullish
+exactly happening? We have a bullish candle here where the high is here and
+candle here where the high is here and the open is here. What happened is we go
+the open is here. What happened is we go below the open price and we push higher
+below the open price and we push higher breaking above the high of the previous
+breaking above the high of the previous candle. And what happened after? Now,
+candle. And what happened after? Now, this is a bullish candle. Same thing, we
+this is a bullish candle. Same thing, we have the high here where we first open
+have the high here where we first open lower and then we break above the high.
+lower and then we break above the high. That is a continuation type and we'll
+That is a continuation type and we'll know exactly what is happening inside of
+know exactly what is happening inside of each candle, even on the lower time
+each candle, even on the lower time frame. Now, the other type is reversal
+frame. Now, the other type is reversal and this simply happens when we have
+and this simply happens when we have bullish candle, but then instead of
+bullish candle, but then instead of continuing bullish same as here, what we
+continuing bullish same as here, what we have is a flip or a reversal or a change
+have is a flip or a reversal or a change of the direction. So, notice how here
+of the direction. So, notice how here what we have is strength, meaning that
+what we have is strength, meaning that we're closing above previous candles.
+we're closing above previous candles. And we focus a lot here on the concept
+And we focus a lot here on the concept of strength and weakness. But here, we
+of strength and weakness. But here, we do have weakness. We have failing to
+do have weakness. We have failing to close above. And you don't need to trade
+close above. And you don't need to trade this candle only, but you can trade this
+this candle only, but you can trade this one. Okay? Now, what happened here is we
+one. Okay? Now, what happened here is we start going higher first, but then
+start going higher first, but then failing to continue higher and having a
+failing to continue higher and having a lot of weakness here, maybe into a key
+lot of weakness here, maybe into a key level or any condition. It could happen
+level or any condition. It could happen in different conditions, but the main
+in different conditions, but the main thing is that we start going higher
+thing is that we start going higher first and then failing to close lower.
+first and then failing to close lower. Most likely, we're not starting lower
+Most likely, we're not starting lower first to go higher. No, we're doing the
+first to go higher. No, we're doing the opposite. Now, even though both are high
+opposite. Now, even though both are high probability continuation and reversal,
+probability continuation and reversal, but each one needs to be traded in its
+but each one needs to be traded in its own way. But for this video, we'll focus
+own way. But for this video, we'll focus more on continuation. For the reversal,
+more on continuation. For the reversal, it needs to be traded in a different
+it needs to be traded in a different way, and maybe that's for another video
+way, and maybe that's for another video or it's there in the CCT course. So, how
+or it's there in the CCT course. So, how do we trade that? First of all, we have
+do we trade that? First of all, we have this candle. This could be on any
+this candle. This could be on any timeframe. This could be on the daily,
+timeframe. This could be on the daily, on the weekly, on the 4-hour, on the
+on the weekly, on the 4-hour, on the 15-minute, whatever. The moment we have
+15-minute, whatever. The moment we have this, and I'll show you which candle to
+this, and I'll show you which candle to actually use because we do have a lot of
+actually use because we do have a lot of candles. So, why am I choosing this one?
+candles. So, why am I choosing this one? We'll know that. But the first thing we
+We'll know that. But the first thing we want to do is, first of all, look at the
+want to do is, first of all, look at the low of the candle, but what's more
+low of the candle, but what's more important is the high of the candle and
+important is the high of the candle and the most important one is the opening of
+the most important one is the opening of the next candle. So, simply the closing
+the next candle. So, simply the closing price of this, which goes here, this is
+price of this, which goes here, this is where the candle closes, it's the
+where the candle closes, it's the opening of the next candle. So, the next
+opening of the next candle. So, the next candle almost likely, if there is no
+candle almost likely, if there is no gap, is going to open here. How does
+gap, is going to open here. How does this look on the lower timeframe? It's
+this look on the lower timeframe? It's something like this. But we have the
+something like this. But we have the opening here, maybe going lower first,
+opening here, maybe going lower first, creating the low, going higher, and we
+creating the low, going higher, and we have some structure that is inside of
+have some structure that is inside of the candle, reaching the high of the
+the candle, reaching the high of the candle here, and then closure below.
+candle here, and then closure below. Now, what do we want to do is based on
+Now, what do we want to do is based on this candle, we want to trade the next
+this candle, we want to trade the next one. And if this is a higher probability
+one. And if this is a higher probability candle, which we're going to be
+candle, which we're going to be discussing later, then what I'm looking
+discussing later, then what I'm looking for is something that is specific. Is
+for is something that is specific. Is that price needs to go below in order to
+that price needs to go below in order to buy. And that's how this looks. Price
+buy. And that's how this looks. Price first goes lower, and then start going
+first goes lower, and then start going higher, and I'm trading candle two based
+higher, and I'm trading candle two based on candle one's. If this is a bullish
+on candle one's. If this is a bullish one, we need to see a retracement first.
+one, we need to see a retracement first. So, price started go lower first, you're
+So, price started go lower first, you're just going into a key level, or give me
+just going into a key level, or give me any type of confirmation that I can
+any type of confirmation that I can enter from. Now, after this, I'll be
+enter from. Now, after this, I'll be looking for the continuation, so I could
+looking for the continuation, so I could enter here, maybe here, and then look
+enter here, maybe here, and then look for the continuation to the upside,
+for the continuation to the upside, trading this candle. So, the entry comes
+trading this candle. So, the entry comes at the creation of this week. You're
+at the creation of this week. You're already in when this expansion happen.
+already in when this expansion happen. So, higher time frame is going to give
+So, higher time frame is going to give us the candle bias, the opening price,
+us the candle bias, the opening price, and the entry zone or range. But, the
+and the entry zone or range. But, the lower time frame is going to give us the
+lower time frame is going to give us the structure, the key levels, and the
+structure, the key levels, and the confirmation. The moment you align these
+confirmation. The moment you align these two, you have a valid trade. So, the
+two, you have a valid trade. So, the time frames that you need to use. If
+time frames that you need to use. If you're using the higher time frame
+you're using the higher time frame candles on the weekly, then you want to
+candles on the weekly, then you want to look for the confirmation and the
+look for the confirmation and the structure and the key levels on the
+structure and the key levels on the 4-hour, daily goes with the 1-hour,
+4-hour, daily goes with the 1-hour, 4-hour and 15-minute, and then hourly
+4-hour and 15-minute, and then hourly 15-minute with the 5-minute and
+15-minute with the 5-minute and 1-minute. You could be using this for
+1-minute. You could be using this for day swing trading. These are more for
+day swing trading. These are more for day trading, and the last one is for
+day trading, and the last one is for scalping. Now, this is the three-step
+scalping. Now, this is the three-step framework in order to identify a valid
+framework in order to identify a valid trade. The first one is identify a high
+trade. The first one is identify a high probability candle, and that's what
+probability candle, and that's what we're going to be covering on the next
+we're going to be covering on the next slide. And then, we wait for a
+slide. And then, we wait for a retracement below or above the opening
+retracement below or above the opening price into a key level. Meaning that if
+price into a key level. Meaning that if I'm bullish, I want to see price
+I'm bullish, I want to see price retracing below the opening price. If
+retracing below the opening price. If we're bearish, it's going to be above
+we're bearish, it's going to be above the opening price. And then, the entry
+the opening price. And then, the entry and trade management, and everyone is
+and trade management, and everyone is going to have his own entry and trade
+going to have his own entry and trade management. Because what matters the
+management. Because what matters the most when it comes to the daily bias is
+most when it comes to the daily bias is this, and then whatever trading plan or
+this, and then whatever trading plan or strategy you're using, you could blend
+strategy you're using, you could blend it here when it comes to the entry and
+it here when it comes to the entry and trade management. Now, a high
+trade management. Now, a high probability candle, and that's what it
+probability candle, and that's what it matters here. We need to understand not
+matters here. We need to understand not every candle is a valid one to trade.
+every candle is a valid one to trade. So, a high probability candle could be
+So, a high probability candle could be one that reacted off a key level,
+one that reacted off a key level, weakness or strength, or momentum. And
+weakness or strength, or momentum. And momentum goes the same with strength.
+momentum goes the same with strength. So, the first thing we notice here, this
+So, the first thing we notice here, this is the AUD/USD on the 4-hour time frame.
+is the AUD/USD on the 4-hour time frame. CCT works a lot here, if you notice. As
+CCT works a lot here, if you notice. As we're going lower,
+we're going lower, and then we start going higher. What
+and then we start going higher. What happens is we close bullish, and then
+happens is we close bullish, and then continuation here. And then the moment
+continuation here. And then the moment we have a retracement momentum candle,
+we have a retracement momentum candle, we can look for an entry here. Not every
+we can look for an entry here. Not every time price is going to give us an entry,
+time price is going to give us an entry, but then we have a continuation here.
+but then we have a continuation here. Continuation. And after this range, this
+Continuation. And after this range, this range to the upside, what happened is
+range to the upside, what happened is going lower, we have a closure to the
+going lower, we have a closure to the upside, and then a bit of a
+upside, and then a bit of a continuation. And notice what happened
+continuation. And notice what happened after.
+after. Is price going lower, going higher? So,
+Is price going lower, going higher? So, a break of structure here, and then this
+a break of structure here, and then this candle give us a continuation.
+candle give us a continuation. And this is a high probability candle.
+And this is a high probability candle. Now, again, what happened is price going
+Now, again, what happened is price going lower, but closing bearish, bearish,
+lower, but closing bearish, bearish, bearish. And I know that based on the
+bearish. And I know that based on the structure,
+structure, we're bullish here. And again, I need to
+we're bullish here. And again, I need to make something clear that this is only
+make something clear that this is only one way of finding the bias. I do have
+one way of finding the bias. I do have some videos going over finding or
+some videos going over finding or identifying daily bias using structure,
+identifying daily bias using structure, using candles, using moving average, a
+using candles, using moving average, a lot of ways. But for this one, we're
+lot of ways. But for this one, we're applying the CCT, the candle continuity
+applying the CCT, the candle continuity theory, the one candle rule. We also
+theory, the one candle rule. We also need to align and use structure with it.
+need to align and use structure with it. So, if I can know that this is a break
+So, if I can know that this is a break of structure to the upside, this is
+of structure to the upside, this is weakness. We're going to be discussing
+weakness. We're going to be discussing this. I know that here,
+this. I know that here, if I zoom in, what happened is price
+if I zoom in, what happened is price going lower, closing bullish, meaning
+going lower, closing bullish, meaning that this is a closure of a bullish
+that this is a closure of a bullish candle, aligned with structure, coming
+candle, aligned with structure, coming out of a key level, having some
+out of a key level, having some weakness, meaning that I could be
+weakness, meaning that I could be looking for below the opening price
+looking for below the opening price for a continuation. Buying from here,
+for a continuation. Buying from here, looking for this push to the upside.
+looking for this push to the upside. Same thing, a momentum candle. Is it a
+Same thing, a momentum candle. Is it a high probability one? Maybe. We look for
+high probability one? Maybe. We look for buying below the opening price, going
+buying below the opening price, going higher. Take a look at here. What
+higher. Take a look at here. What happened is we started to go higher. We
+happened is we started to go higher. We had a lot of bullish candles going
+had a lot of bullish candles going higher and you could be always buying
+higher and you could be always buying below the opening price, buying below
+below the opening price, buying below the opening price. Not every time price
+the opening price. Not every time price is going to give you a retracement. What
+is going to give you a retracement. What I love to do is always look for the, you
+I love to do is always look for the, you know, when I'm going lower and I know
+know, when I'm going lower and I know that we're starting to go bullish,
+that we're starting to go bullish, I really prefer to enter at the
+I really prefer to enter at the beginning of the range or at the
+beginning of the range or at the beginning of the move, but you need to
+beginning of the move, but you need to have experience for this. And then I'm
+have experience for this. And then I'm trading all the way until here, but I'm
+trading all the way until here, but I'm only entering one trade here, catching
+only entering one trade here, catching this big move instead of entering in the
+this big move instead of entering in the middle and catching this. But feel free
+middle and catching this. But feel free to do whatever you like. You notice how
+to do whatever you like. You notice how we're bullish, so the structure is
+we're bullish, so the structure is bullish. We have this low and we start
+bullish. We have this low and we start to see some weakness. So we failed to
+to see some weakness. So we failed to close below and if you know, we
+close below and if you know, we understand the concept of strength and
+understand the concept of strength and weakness,
+weakness, failing to close, that is weakness,
+failing to close, that is weakness, meaning that we could be having a
+meaning that we could be having a reversal. What I want to see is a
+reversal. What I want to see is a bullish candle. If I see a bullish
+bullish candle. If I see a bullish candle, and that bullish candle should
+candle, and that bullish candle should not do this. I want it to be here in
+not do this. I want it to be here in order to at least target maybe this high
+order to at least target maybe this high or this level. Then in the price action,
+or this level. Then in the price action, you'll notice that here we have a
+you'll notice that here we have a bullish candle. Mark the opening price
+bullish candle. Mark the opening price and then the high. Go to the 15 minute.
+and then the high. Go to the 15 minute. And there are a lot of different ways to
+And there are a lot of different ways to do this. So notice how this is the
+do this. So notice how this is the opening price. This is the high, meaning
+opening price. This is the high, meaning that I want to see price going down
+that I want to see price going down first into somewhere and then buying.
+first into somewhere and then buying. Now you could be using a lot of
+Now you could be using a lot of different methods here. So what I could
+different methods here. So what I could do is have an entry based on a fair
+do is have an entry based on a fair value gap, have an entry based on a
+value gap, have an entry based on a inverse fair value gap, have an entry
+inverse fair value gap, have an entry based on a engulfing or just bullish
+based on a engulfing or just bullish candle in this case. Or I could look for
+candle in this case. Or I could look for a break of structure on this direction
+a break of structure on this direction to the upside. These are some examples
+to the upside. These are some examples of what we can look for in in here. Now,
+of what we can look for in in here. Now, it started going lower and we have price
+it started going lower and we have price filling a key level and then closing uh
+filling a key level and then closing uh bullish candle, okay? Now, what I prefer
+bullish candle, okay? Now, what I prefer to see in every trade is that I want to
+to see in every trade is that I want to see whenever we start going lower, I
+see whenever we start going lower, I want to see price having either
+want to see price having either weakness, so failing to close
+weakness, so failing to close and then continuing higher, okay?
+and then continuing higher, okay? Or, a break of structure or just a
+Or, a break of structure or just a single candle that convinced me after
+single candle that convinced me after the weakness. So, now I can I'm not
+the weakness. So, now I can I'm not convinced of this, even the timing is
+convinced of this, even the timing is not the best. I'll not be entering uh on
+not the best. I'll not be entering uh on this into maybe this key level or this
+this into maybe this key level or this key level here. That's what I see. Price
+key level here. That's what I see. Price is coming into here, having some
+is coming into here, having some weakness, closing higher. I could be
+weakness, closing higher. I could be simply entering this on this, maybe
+simply entering this on this, maybe covering the level here, something like
+covering the level here, something like this. Going to the 4-hour time frame.
+this. Going to the 4-hour time frame. What we notice is that we had this
+What we notice is that we had this pushed to the outside. If we go back to
+pushed to the outside. If we go back to the 4-hour, I could first look for this
+the 4-hour, I could first look for this imbalance to be filled, okay? That is
+imbalance to be filled, okay? That is around 2.5 and then looking for this
+around 2.5 and then looking for this high to be taken, but before that
+high to be taken, but before that looking for this key level to be
+looking for this key level to be disrespected first in order to extend my
+disrespected first in order to extend my take profit to here. So, that's the
+take profit to here. So, that's the alignment. Now, going back to the
+alignment. Now, going back to the 15-minute time frame and all that I want
+15-minute time frame and all that I want to see is the alignment going higher.
+to see is the alignment going higher. So, we start going lower first into the
+So, we start going lower first into the level that I was looking at exactly and
+level that I was looking at exactly and then price just pushed higher. Now,
+then price just pushed higher. Now, going back to the 4-hour and I want to
+going back to the 4-hour and I want to show you something that first of all,
+show you something that first of all, not every candle is going to be
+not every candle is going to be tradeable, okay? Playing the price
+tradeable, okay? Playing the price action, we notice here that we start
+action, we notice here that we start going lower, going lower here, it did
+going lower, going lower here, it did not give any entry, but now we can see
+not give any entry, but now we can see that we have a change in the direction.
+that we have a change in the direction. So, notice how we're moving higher. Now,
+So, notice how we're moving higher. Now, we do have a break of structure to the
+we do have a break of structure to the downside and then creating a low here.
+downside and then creating a low here. Playing the price action, notice how
+Playing the price action, notice how we're starting to go higher and higher,
+we're starting to go higher and higher, but into where? Into this range. This is
+but into where? Into this range. This is a high probability range and I want to
+a high probability range and I want to see a continuation to the downside from
+see a continuation to the downside from it, at least breaking this low. Notice
+it, at least breaking this low. Notice how we're still closing bullish and now
+how we're still closing bullish and now we close bearish. Is this a good candle?
+we close bearish. Is this a good candle? Yes, we had a lot of weakness here, so
+Yes, we had a lot of weakness here, so weakness
+weakness and weakness into an imbalance with the
+and weakness into an imbalance with the structure. So, this is a high
+structure. So, this is a high probability candle. All what I want to
+probability candle. All what I want to do now, have an entry based on this
+do now, have an entry based on this candle into this high and maybe just the
+candle into this high and maybe just the 50% of the range. 50% of the range is
+50% of the range. 50% of the range is here, I could take this as my first
+here, I could take this as my first target. If you notice, we're going
+target. If you notice, we're going lower, that's the opening price. What I
+lower, that's the opening price. What I want to see is price to go higher in
+want to see is price to go higher in order to continue lower. And I know that
+order to continue lower. And I know that this retracement is nothing but an entry
+this retracement is nothing but an entry opportunity to me to continue in the
+opportunity to me to continue in the same direction. That is what CCT is all
+same direction. That is what CCT is all about. It's looking for the continuation
+about. It's looking for the continuation or even the reversal of that previous
+or even the reversal of that previous candle. Because now I know that this is
+candle. Because now I know that this is a continuation, I'll be looking for the
+a continuation, I'll be looking for the continuation. If it was a reversal, I'd
+continuation. If it was a reversal, I'd be more leaning toward reversals. A
+be more leaning toward reversals. A reversal actually gives a huge reward to
+reversal actually gives a huge reward to risk. We're going lower, okay, and now
+risk. We're going lower, okay, and now we go higher, but now we have some
+we go higher, but now we have some weakness. So, you notice this bullish
+weakness. So, you notice this bullish candle had some weakness here. We now
+candle had some weakness here. We now have a bearish candle. So, this is a
+have a bearish candle. So, this is a bearish candle and a lot of time for me
+bearish candle and a lot of time for me it's enough. You could be having an
+it's enough. You could be having an entry from here. Stop loss about this.
+entry from here. Stop loss about this. As we said, 50% of the range was maybe
+As we said, 50% of the range was maybe somewhere around here. That is already
+somewhere around here. That is already huge when it comes to the reward to
+huge when it comes to the reward to risk. If you're not entering based on
+risk. If you're not entering based on this, but you go lower, that is a break
+this, but you go lower, that is a break of structure, you could look for the
+of structure, you could look for the continuation here. That is another
+continuation here. That is another method. Now, playing the price action,
+method. Now, playing the price action, notice how we do have a break of
+notice how we do have a break of structure, you could look for, you know,
+structure, you could look for, you know, place a limit order somewhere in here
+place a limit order somewhere in here and that's where price actually
+and that's where price actually came back to. And now, notice what
+came back to. And now, notice what happened.
+happened. We shall go lower, I'd be close to that,
+We shall go lower, I'd be close to that, going lower. And now, if we look at the
+going lower. And now, if we look at the 4-hour time frame, this was
+4-hour time frame, this was continuation, You could have another
+continuation, You could have another continuation here because you know that
+continuation here because you know that you're trading with a structure. So, now
+you're trading with a structure. So, now you could
+you could enter another continuation based on
+enter another continuation based on this. So, now this is the opening price.
+this. So, now this is the opening price. This is where
+This is where uh the candle close. Price goes higher
+uh the candle close. Price goes higher and then go a lower. We could enter. So,
+and then go a lower. We could enter. So, price goes higher, higher, and then
+price goes higher, higher, and then lower. Now, not every time this is going
+lower. Now, not every time this is going to be valid, but if this candle is a
+to be valid, but if this candle is a high probability one and is reacting off
+high probability one and is reacting off your key level, you could be entering
+your key level, you could be entering based on this.
+based on this. For me and based on some key levels that
+For me and based on some key levels that we use in It's Cool, okay? This here,
+we use in It's Cool, okay? This here, this is reacting off a key level.
+this is reacting off a key level. Shorting here.
+Shorting here. Stop loss above this. And we're also
+Stop loss above this. And we're also aligned with a continuation framework.
+aligned with a continuation framework. We could be first targeting this low
+We could be first targeting this low and then continuing all the way down
+and then continuing all the way down here.
+here. Playing the price action.
+Playing the price action. Huge one going lower.
+Huge one going lower. That is what CCT is all about. Now, I
+That is what CCT is all about. Now, I could look for this another time.
+could look for this another time. Another candle here. I could have
+Another candle here. I could have another CCT here.
+another CCT here. And have an entry when it's valid. Now,
+And have an entry when it's valid. Now, this is a bullish candle. Would I trade
+this is a bullish candle. Would I trade this one? Not really because I know that
+this one? Not really because I know that my structure is not aligned and this is
+my structure is not aligned and this is not a high probability candle. And then
+not a high probability candle. And then you see, it flips lower back into this
+you see, it flips lower back into this level and going lower. And finally, we
+level and going lower. And finally, we hit the take profit. This is a huge 12
+hit the take profit. This is a huge 12 to 1. And that's how you trade CCT.
+to 1. And that's how you trade CCT. That's how you find your bias. Now, you
+That's how you find your bias. Now, you could do this on the daily. Bearish
+could do this on the daily. Bearish candle going lower. Bullish candle
+candle going lower. Bullish candle continuing higher. And based on the
+continuing higher. And based on the structure, going lower, closing higher,
+structure, going lower, closing higher, meaning continuation to the upside.
+meaning continuation to the upside. That's it for today's video. Thank you
+That's it for today's video. Thank you for watching. Feel free to check out
+for watching. Feel free to check out It's Cool if you want to have access to
+It's Cool if you want to have access to the CCT course, the full course, and the
+the CCT course, the full course, and the Ichimoku and how to blend them together.
+Ichimoku and how to blend them together. If that's something that you're
+If that's something that you're interested in, hit the like button and
+interested in, hit the like button and subscribe to the channel. That's it and
+subscribe to the channel. That's it and I'll see you next one.

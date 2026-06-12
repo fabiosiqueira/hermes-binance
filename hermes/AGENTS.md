@@ -74,7 +74,7 @@ O cron (`cron/jobs.json`, job `strategist-heartbeat-4h`, expr `0 */4 * * *`) dis
 ```
 python scripts/strategist_cycle.py brief
 ```
-O thin client solicita ao gateway (que grava o brief em Redis sob `binance:strategist:brief:<SYMBOL>` usando REDIS_HOST/REDIS_PORT). O ciclo também executa o mulham_analyzer (que grava análise determinística em `binance:strategist:mulham:<SYMBOL>`). O stdout imprime o path de `workspace/brief.json` (artefato para compatibilidade/debug). O source of truth para consumo pelo agente é Redis (redis-first). O brief contém: `catalog[]` ..., `market` ..., etc. (ver schemas.py).
+O thin client solicita ao gateway, que grava o brief em Redis sob `binance:strategist:brief:<SYMBOL>` (REDIS_HOST/REDIS_PORT do agente) — essa é a cópia que EU leio. O ciclo também executa o mulham_analyzer (que grava análise determinística em `binance:strategist:mulham:<SYMBOL>`). O stdout imprime a **chave Redis do brief** (não há arquivo). O handoff é 100% Redis (redis-first); não dependo de filesystem. O brief contém: `catalog[]` ..., `market` ..., etc. (ver schemas.py).
 
 **(b) Eu (HAWK) consumo o brief via Redis (redis-first), raciocino e entrego a proposal via Redis (SET + execute redis:KEY):**
 
@@ -116,10 +116,10 @@ Os dogmas que o gate aplica estão em `dogmas.yaml` (leio antes de propor).
 O modo de pensar humano treinado é aplicado **sempre**, mas **via camada determinística primeiro** (redis-first) para evitar desperdício de tokens pagos em análises repetidas da mesma coisa.
 
 Fluxo obrigatório (brief → proposal):
-1. Rode `python scripts/strategist_cycle.py brief`. O gateway grava o brief em Redis (`binance:strategist:brief:<SYMBOL>` usando REDIS_HOST/REDIS_PORT). O ciclo executa o mulham_analyzer (que grava os sinais determinísticos W+S ranges, rect_candidates, CCT, material_change, signature em `binance:strategist:mulham:<SYMBOL>`). Os arquivos `workspace/brief.json` e `mulham_signals.json` são artefatos gerados pelo thin client (o stdout do brief imprime o path por contrato).
+1. Rode `python scripts/strategist_cycle.py brief`. O gateway grava o brief em Redis (`binance:strategist:brief:<SYMBOL>` no Redis do agente). O ciclo executa o mulham_analyzer (que lê o brief do Redis e grava os sinais determinísticos W+S ranges, rect_candidates, CCT, material_change, signature em `binance:strategist:mulham:<SYMBOL>`). O stdout imprime a chave Redis do brief — handoff 100% Redis, sem arquivos.
 2. Consuma via Redis (redis-first): GET `binance:strategist:brief:<SYMBOL>` e GET `binance:strategist:mulham:<SYMBOL>`. Sempre use REDIS_HOST/REDIS_PORT do ambiente (nunca hardcode). Trate os sinais como fonte factual e determinística — não re-detecte swings/BOS/weakness/CCT no LLM.
 3. O LLM só faz o overlay de alto nível: dado os candidates determinísticos + portfólio/risk_state/active atual + dogmas, decido qual (se algum) ativar agora, sizing exato, automations e timing.
-4. Gere o dict da StrategyProposal em memória (ou via code_execution). Faça SET no Redis sob a chave `binance:strategist:proposal:<SYMBOL>` (use REDIS_HOST/REDIS_PORT, TTL curto ~300s). O arquivo `workspace/proposal.json` pode ser escrito como side-effect para inspeção local, mas o handoff oficial é Redis.
+4. Gere o dict da StrategyProposal em memória (ou via code_execution). Faça SET no Redis sob a chave `binance:strategist:proposal:<SYMBOL>` (use REDIS_HOST/REDIS_PORT, TTL curto ~300s). O handoff é Redis — nunca arquivo.
 5. Rode o execute com prefixo redis: `python scripts/strategist_cycle.py execute redis:binance:strategist:proposal:<SYMBOL>` (o cycle faz GET do Redis e envia o conteúdo exato para o gateway).
 6. Se `material_change` false ou signature similar, produza proposal mínima. No `reasoning` cite fontes Redis.
 7. Prefira 1-rect quando os sinais indicarem fresh range + weakness em key level + alignment. Sempre SL da estrutura, downside primeiro, RR explícito.
@@ -130,7 +130,7 @@ Legendas em `docs/video-subtitles/`. O analyzer + Redis keys são a integração
 
 **(c) Gate + execução (no Risk Gateway):**
 ```
-python scripts/strategist_cycle.py execute redis:binance:strategist:proposal:<SYMBOL>   # ou caminho de arquivo (compat)
+python scripts/strategist_cycle.py execute redis:binance:strategist:proposal:<SYMBOL>   # handoff redis-first (sem arquivo)
 ```
 O thin-client envia a proposal ao Risk Gateway via `POST GATEWAY_URL/execute`. **O enforcement acontece no serviço separado (`risk-gateway`):** `emergency_stop`, `assert_testnet` (DRY_RUN) e `validate` (dogmas) rodam lá — o agente não enforça nada. Se válida: o gateway executa entrada+stop (atômico, rollback se stop falhar) + instala automations + registra decisão e métricas.
 

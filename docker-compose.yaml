@@ -41,6 +41,12 @@ services:
       HERMES_DATA_DIR: /opt/data
       REDIS_HOST: risk-redis
       REDIS_PORT: "6379"
+      # Espelho do brief no Redis do agente (mesmo serviço que `gateway.REDIS_HOST` =
+      # binance-redis) para o handoff redis-first. A cópia autoritativa segue no
+      # risk-redis privado. NÃO usar `redis` aqui: colide com o coolify-redis (ver
+      # nota do serviço binance-redis).
+      BRIEF_MIRROR_REDIS_HOST: binance-redis
+      BRIEF_MIRROR_REDIS_PORT: "6379"
       # secrets (Coolify env tab)
       BETRADER_BASE_URL: ${BETRADER_BASE_URL}
       BETRADER_TOKEN: ${BETRADER_TOKEN}

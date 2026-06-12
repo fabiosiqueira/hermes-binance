@@ -4,18 +4,20 @@
 # Redis. Todo enforcement de risco fica no gateway (risk_gateway.py). O agente LLM
 # (HAWK) só fala com o gateway via HTTP.
 #
-# Contrato de stdout (inalterado): `brief` imprime o PATH absoluto do brief.json;
-# `execute` imprime JSON {"executed": ...}. NUNCA traceback cru.
+# Handoff 100% Redis (sem filesystem): `brief` dispara o gateway (que escreve o brief
+# no Redis) e roda o mulham_analyzer (que grava os sinais no Redis); imprime a CHAVE
+# Redis do brief. `execute` lê a proposal do Redis (prefixo redis:KEY) e imprime JSON
+# {"executed": ...}. NUNCA traceback cru.
 #
 # Env vars necessários do lado do cliente:
 #   GATEWAY_URL    ex.: http://risk-gateway:8647
 #   GATEWAY_TOKEN  token de autenticação do gateway
+#   REDIS_HOST/REDIS_PORT  Redis do agente (binance-redis) — leitura da proposal
 #   (brief apenas) SYMBOL, TIMEFRAME, EXECUTION_MODE
 import argparse
 import json
 import os
 import sys
-from pathlib import Path
 from typing import Optional
 
 import httpx
@@ -23,11 +25,8 @@ from pydantic import ValidationError
 
 from schemas import ExecutionMode, StrategyProposal
 
-# Workspace dos artefatos do ciclo (brief.json, proposal.json) — relativo ao cwd
-# do agente (que roda a partir de hermes/), conforme AGENTS.md.
-_WORKSPACE = Path("workspace")
-_BRIEF_PATH = _WORKSPACE / "brief.json"
-_PROPOSAL_PATH = _WORKSPACE / "proposal.json"
+# Chave Redis do brief espelhado pelo gateway (binance-redis), consumida redis-first.
+_BRIEF_KEY_PREFIX = "binance:strategist:brief:"
 
 _AUTH_HEADER = "Authorization"
 _BEARER_PREFIX = "Bearer "
@@ -50,6 +49,15 @@ def _emit_error(reason: str, detail: str = "") -> int:
     return _emit(payload)
 
 
+def _build_redis():
+    """Cliente Redis do agente (binance-redis) a partir de REDIS_HOST/REDIS_PORT."""
+    import redis
+
+    host = os.environ.get("REDIS_HOST", "redis")
+    port = int(os.environ.get("REDIS_PORT", "6379"))
+    return redis.Redis(host=host, port=port, decode_responses=True)
+
+
 def _load_gateway_config() -> tuple[str, str] | None:
     """Lê GATEWAY_URL e GATEWAY_TOKEN do env. Retorna None se ausentes."""
     url = os.environ.get("GATEWAY_URL", "").strip()
@@ -60,10 +68,12 @@ def _load_gateway_config() -> tuple[str, str] | None:
 
 
 def _cmd_brief(*, http_client: httpx.Client) -> int:
-    """Metade 1: solicita Brief ao gateway e escreve workspace/brief.json.
+    """Metade 1: solicita Brief ao gateway (handoff 100% Redis).
 
-    Envia {symbol, timeframe, mode} ao POST /brief do gateway; escreve a resposta
-    JSON em workspace/brief.json e imprime o path absoluto.
+    Envia {symbol, timeframe, mode} ao POST /brief; o gateway escreve o brief no Redis
+    do agente (binance:strategist:brief:<symbol>) e no seu cache autoritativo privado.
+    Em seguida roda o mulham_analyzer (redis-first) e imprime a CHAVE Redis do brief.
+    Não há escrita em arquivo.
     """
     config = _load_gateway_config()
     if config is None:
@@ -92,40 +102,35 @@ def _cmd_brief(*, http_client: httpx.Client) -> int:
         )
         return 1
 
-    _WORKSPACE.mkdir(parents=True, exist_ok=True)
-    _BRIEF_PATH.write_text(resp.text, encoding="utf-8")
-
-    # Always run deterministic Mulham pre-analysis right after fetching the brief.
-    # This produces workspace/mulham_signals.json with W+S ranges, CCT bias,
-    # 1-rect candidates etc. The LLM is instructed (SOUL/AGENTS + cron/webhook prompts)
-    # to consume this as factual input BEFORE any expensive reasoning.
-    # Goal: move Mulham "chart reading" out of paid LLM turns and avoid re-analyzing
-    # near-identical market states on every 4h heartbeat or sentinel event.
+    # Pré-análise determinística do Mulham, redis-first: lê o brief do Redis (espelhado
+    # pelo gateway acima) e grava os sinais em binance:strategist:mulham:<symbol>. O LLM
+    # é instruído (SOUL/AGENTS + prompts do cron/webhook) a consumir isso como fato ANTES
+    # de qualquer raciocínio caro — tira a "leitura de gráfico" dos turnos pagos e evita
+    # re-analisar estados de mercado quase idênticos a cada heartbeat/evento.
     try:
         import subprocess
         subprocess.run(
-            ["python", "scripts/mulham_analyzer.py", "--brief", str(_BRIEF_PATH), "--output", str(_WORKSPACE / "mulham_signals.json")],
+            ["python", "scripts/mulham_analyzer.py", "--symbol", symbol],
             check=False,
             capture_output=True,
             text=True,
             timeout=30,
         )
     except Exception:
-        pass  # analyzer is best-effort; LLM still has the raw brief if it fails
+        pass  # analyzer é best-effort; o agente ainda lê o brief cru do Redis se falhar
 
-    print(str(_BRIEF_PATH.resolve()))
+    print(f"{_BRIEF_KEY_PREFIX}{symbol}")
     return 0
 
 
-def _cmd_execute(proposal_path: str, *, http_client: httpx.Client) -> int:
-    """Metade 2: envia proposta ao gateway e repassa o resultado.
+def _cmd_execute(
+    proposal_ref: str, *, http_client: httpx.Client, redis_client: object = None
+) -> int:
+    """Metade 2: envia proposta ao gateway e repassa o resultado (redis-first).
 
-    Aceita dois modos (para suportar redis-first):
-    - Caminho de arquivo (legado): lê workspace/proposal.json
-    - "redis:<key>": faz GET no Redis (usando REDIS_HOST/REDIS_PORT do env) e usa o conteúdo.
-
-    Valida schema localmente (só pydantic, sem dogmas) e POST /execute.
-    Repassa o corpo exato para o gateway.
+    A proposta é lida do Redis do agente via referência "redis:<key>" (handoff oficial,
+    sem filesystem). Valida schema localmente (só pydantic, sem dogmas) e POST /execute,
+    repassando o corpo exato.
     """
     config = _load_gateway_config()
     if config is None:
@@ -133,27 +138,27 @@ def _cmd_execute(proposal_path: str, *, http_client: httpx.Client) -> int:
 
     gateway_url, token = config
 
-    # Carrega o conteúdo da proposta (arquivo ou Redis)
+    if not proposal_ref.startswith("redis:"):
+        return _emit(
+            {
+                "executed": False,
+                "reason": "invalid_proposal",
+                "detail": "handoff é redis-first: use redis:<key>",
+            }
+        )
+
+    # Carrega o conteúdo da proposta do Redis (REDIS_HOST/REDIS_PORT do env).
     try:
-        if proposal_path.startswith("redis:"):
-            import os
-            import redis
-            key = proposal_path[6:]
-            host = os.environ.get("REDIS_HOST", "redis")
-            port = int(os.environ.get("REDIS_PORT", "6379"))
-            r = redis.Redis(host=host, port=port, decode_responses=True)
-            raw = r.get(key)
-            if raw is None:
-                return _emit({"executed": False, "reason": "invalid_proposal", "detail": f"redis key not found: {key}"})
-            # raw já é str por causa de decode_responses
-        else:
-            raw = Path(proposal_path).read_text(encoding="utf-8")
+        key = proposal_ref[len("redis:") :]
+        r = redis_client if redis_client is not None else _build_redis()
+        raw = r.get(key)
+        if raw is None:
+            return _emit({"executed": False, "reason": "invalid_proposal", "detail": f"redis key not found: {key}"})
+        # raw já é str por causa de decode_responses
 
         StrategyProposal.model_validate_json(raw)
     except ValidationError as exc:
         return _emit({"executed": False, "reason": "invalid_proposal", "detail": exc.errors()})
-    except OSError as exc:
-        return _emit({"executed": False, "reason": "invalid_proposal", "detail": str(exc)})
     except Exception as exc:  # redis etc.
         return _emit({"executed": False, "reason": "invalid_proposal", "detail": str(exc)})
 
@@ -180,15 +185,16 @@ def main(
     argv: Optional[list[str]] = None,
     *,
     http_client: Optional[httpx.Client] = None,
+    redis_client: object = None,
 ) -> int:
     """Ponto de entrada do CLI. argv injetável para testes; http_client é a fronteira
-    de I/O do gateway (default = httpx.Client real).
+    de I/O do gateway e redis_client a do Redis do agente (defaults = clientes reais).
     """
     parser = argparse.ArgumentParser(prog="strategist_cycle")
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("brief", help="solicita Brief ao gateway e escreve workspace/brief.json")
-    p_exec = sub.add_parser("execute", help="envia proposta ao gateway e repassa resultado")
-    p_exec.add_argument("proposal", help="path do proposal.json (StrategyProposal)")
+    sub.add_parser("brief", help="solicita Brief ao gateway (handoff via Redis; imprime a chave)")
+    p_exec = sub.add_parser("execute", help="envia proposta (redis:KEY) ao gateway e repassa resultado")
+    p_exec.add_argument("proposal", help="referência redis:KEY da StrategyProposal")
 
     args = parser.parse_args(argv)
 
@@ -196,7 +202,7 @@ def main(
 
     if args.command == "brief":
         return _cmd_brief(http_client=client)
-    return _cmd_execute(args.proposal, http_client=client)
+    return _cmd_execute(args.proposal, http_client=client, redis_client=redis_client)
 
 
 if __name__ == "__main__":
