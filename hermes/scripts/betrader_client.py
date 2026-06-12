@@ -21,6 +21,7 @@ from schemas import (
     ActiveItem,
     AutomationSpec,
     Brief,
+    Candle,
     EntryOrder,
     ExecutionMode,
     IndicatorSpec,
@@ -38,6 +39,21 @@ _STOP_CONFIRMED_STATUS = {"NEW", "FILLED", "PARTIALLY_FILLED"}
 # verificação não expõe endpoint de precision no fluxo de ordem (seção 2), então é
 # parâmetro do client; BTCUSDT perp (M1) usa 3 casas.
 _DEFAULT_QUANTITY_PRECISION = 3
+
+# Mercado via POST /api/market (BeTraderRequest): candles + indicadores correntes.
+# O GET público de /api/market não expõe candles e só devolve indicadores já em
+# cache; o POST lê o CANDLE_LIST do monitor e computa os indicadores pedidos.
+# `_MARKET_INDICATORS`: nome→params (valores textbook — o catálogo /api/indicators
+# só expõe NOMES de params, não defaults). `_MARKET_CANDLES`: janela para a análise
+# Mulham (swings/ranges/CCT precisam de história; betrader devolve no máx. o disponível).
+_MARKET_INDICATORS: dict[str, list[str]] = {
+    "RSI": ["14"],
+    "MACD": ["12", "26", "9"],
+    "EMA": ["20"],
+    "ATR": ["14"],
+    "BB": ["20", "2"],
+}
+_MARKET_CANDLES = 200
 
 
 class BetraderError(Exception):
@@ -231,7 +247,7 @@ class BetraderClient:
     ) -> Brief:
         """Monta o Brief a partir dos GETs do betrader (seção 1 e 6 do doc).
 
-        Fontes: /api/indicators (catálogo), /api/market (indicators correntes),
+        Fontes: /api/indicators (catálogo), POST /api/market (candles + indicadores),
         /api/exchange/balance (equity futuro + balance spot), /api/futures (posições),
         /api/beholder/memory + /api/automations/indexes (índices correntes),
         /api/automations + /api/orders (ativos). risk_state vem do caller (a
@@ -247,15 +263,48 @@ class BetraderClient:
             for nome, meta in catalog_raw.items()
         ]
 
-        # Indicadores correntes: 0 = cache miss → None (seção 1 do doc).
-        market_raw = self._get(
-            "/api/market", params={"asset": symbol, "timeframes": timeframe}
+        # Candles + indicadores correntes via POST /api/market (BeTraderRequest).
+        # Resposta: timeframes[].{interval, indicators, candles}. Candle do betrader
+        # usa `timestamp` (epoch ms) → mapeado para `open_time`. 0 = cache miss → None.
+        market_raw = self._post(
+            "/api/market",
+            json={
+                "asset": symbol,
+                "timeframes": [
+                    {
+                        "interval": timeframe,
+                        "indicatorsParams": _MARKET_INDICATORS,
+                        "howManyCandles": _MARKET_CANDLES,
+                    }
+                ],
+            },
         ).json()
+        tf_data = next(
+            (
+                tf
+                for tf in market_raw.get("timeframes", [])
+                if tf.get("interval") == timeframe
+            ),
+            {},
+        )
+        candles = [
+            Candle(
+                open_time=int(c["timestamp"]),
+                open=float(c["open"]),
+                high=float(c["high"]),
+                low=float(c["low"]),
+                close=float(c["close"]),
+                volume=float(c["volume"]),
+            )
+            for c in tf_data.get("candles", [])
+        ]
         indicators: dict[str, float | None] = {
             nome: (None if valor == 0 else float(valor))
-            for nome, valor in market_raw.get("indicators", {}).items()
+            for nome, valor in tf_data.get("indicators", {}).items()
         }
-        market = MarketState(symbol=symbol, timeframe=timeframe, indicators=indicators)
+        market = MarketState(
+            symbol=symbol, timeframe=timeframe, candles=candles, indicators=indicators
+        )
 
         # Equity: balance futuro (fiatEstimate "~USDT N"). Balance: spot USDT.available.
         balance_fut = self._get(

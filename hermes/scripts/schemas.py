@@ -54,7 +54,7 @@ class MarketState(BaseModel):
 
     - `symbol`/`timeframe`: par e timeframe da revisão (M1: BTCUSDT, fechamento de candle).
     - `candles`: série OHLCV (origem: monitor CANDLES do betrader).
-    - `indicators`: valores correntes (origem: GET /api/market?asset=&timeframes=&IND=params),
+    - `indicators`: valores correntes (origem: POST /api/market, indicatorsParams por timeframe),
       chaveados por nome do indicador. `None` = dado indisponível (cache miss); o betrader
       retorna `{}`/`0` nesse caso, o adapter normaliza para `None`.
     """
