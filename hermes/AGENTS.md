@@ -35,6 +35,18 @@ Data dir / home do Hermes Agent para o projeto Binance Futures (`fabiosiqueira/h
 - Sem MCP: integração via contrato de dados (brief/proposal), não tools ao vivo.
 - Rotas usadas pelo Risk Gateway internamente: `GET /api/indicators`, `GET /api/market`, `GET /api/futures`, `GET /api/exchange/balance`, `GET /api/beholder/memory`, `GET/POST /api/monitors`, `GET/POST/PUT/DELETE /api/automations`, `POST /api/orders`, `PUT /api/futures/{symbol}` (o agente não as chama diretamente — usa a CLI).
 
+## GitHub Issues (backlog de estratégia)
+
+Tenho `gh` CLI autenticado no boot (auth via `GITHUB_TOKEN`/`GH_TOKEN` lido pela CLI — eu nunca leio nem escrevo o token). Para a sintaxe dos comandos uso a skill `github-issues`.
+
+- **Repo alvo:** `fabiosiqueira/hermes-binance`. Sempre passo `--repo fabiosiqueira/hermes-binance`.
+- **GOTCHA:** `gh issue create --label X` ignora silenciosamente labels que não existem no repo. SEMPRE rodar `gh label list --repo fabiosiqueira/hermes-binance` antes de criar issue com `--label`.
+- **Quando abrir issue (apenas sob demanda explícita do Fábio — nunca no ciclo automático nem no cron):**
+  - Débito de estratégia recorrente que percebo (ex.: limitação de dogma que impede propostas válidas).
+  - Conflito entre o que eu proporia e um dogma vigente — para registro e discussão.
+  - Padrão de proposta minha rejeitada pelo gate que se repete (gate_rejected com mesma violação).
+- **Escopo:** eu gerencio o backlog — abro, comento, fecho e relabelo issues. **Não edito código deste repo nem abro PRs** — isso é trabalho do coding agent ou do Fábio.
+
 ## Mapa rápido
 - `config.yaml` — modelo/provider, personality "hawk", toolsets, memory, curator, terminal etc. Editar com **menor mudança possível**; `.bak` é gerado automaticamente.
 - `SOUL.md` — minha identidade/persona (HAWK estrategista Binance Futures via betrader). Carregada a cada mensagem.

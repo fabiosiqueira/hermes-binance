@@ -35,6 +35,19 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
+# ---------- GitHub CLI (HAWK usa gh p/ abrir issues/PRs) ----------
+# Só o binário; a auth (hosts.yml) é escrita no boot por scripts/gh_auth.py
+# a partir de GITHUB_TOKEN/GH_TOKEN. GH_CONFIG_DIR fica fora do volume /opt/data
+# p/ não vazar token no working tree e ser imune ao masking do env do agente.
+ARG GH_VERSION=2.93.0
+RUN curl -fsSL --retry 3 -o /tmp/gh.tar.gz \
+        "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+    && tar -C /tmp -xzf /tmp/gh.tar.gz \
+    && install -m 0755 "/tmp/gh_${GH_VERSION}_linux_amd64/bin/gh" /usr/local/bin/gh \
+    && rm -rf /tmp/gh.tar.gz "/tmp/gh_${GH_VERSION}_linux_amd64"
+ENV GH_CONFIG_DIR=/opt/hermes/.gh
+RUN mkdir -p /opt/hermes/.gh && chown hermes:hermes /opt/hermes/.gh && chmod 700 /opt/hermes/.gh
+
 # ---------- Stage vps: data dir baked (deploy Coolify/Contabo) ----------
 # Sem bind mount na Contabo: o data dir committed (config.yaml com mcp_servers,
 # skills/, SOUL.md, AGENTS.md, memories/) é copiado para /opt/data. O volume

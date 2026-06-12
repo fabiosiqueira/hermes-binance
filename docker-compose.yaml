@@ -12,7 +12,7 @@
 #   gateway:      MINIMAX_API_KEY, OPENROUTER_API_KEY,
 #                 TELEGRAM_BOT_TOKEN, TELEGRAM_ALLOWED_USERS, TELEGRAM_HOME_CHANNEL,
 #                 BETRADER_USER, EXECUTION_MODE, EMERGENCY_STOP, INITIAL_EQUITY,
-#                 GATEWAY_URL, GATEWAY_TOKEN, WEBHOOK_SECRET
+#                 GATEWAY_URL, GATEWAY_TOKEN, WEBHOOK_SECRET, GITHUB_TOKEN
 #   risk-gateway: BETRADER_BASE_URL, BETRADER_TOKEN, BETRADER_USER,
 #                 EXECUTION_MODE, EMERGENCY_STOP, INITIAL_EQUITY,
 #                 SYMBOL, TIMEFRAME, BRIEF_CACHE_TTL_SECONDS,
@@ -72,7 +72,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: vps
-    command: ["gateway", "run"]
+    command: ["sh", "-c", "python /opt/data/scripts/gh_auth.py; exec gateway run"]
     restart: unless-stopped
     depends_on:
       redis:
@@ -99,6 +99,7 @@ services:
       WEBHOOK_ENABLED: "true"
       WEBHOOK_PORT: "8646"
       WEBHOOK_SECRET: ${WEBHOOK_SECRET}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
     volumes:
       - hermes-data:/opt/data
     networks:

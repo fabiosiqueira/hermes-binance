@@ -62,7 +62,7 @@ services:
     # Sobe o gateway de mensageria (telegram) em foreground como CMD do container
     # (Architecture B: main-wrapper exec `hermes gateway run`). Sem isso o engine
     # cai no CLI interativo e encerra por falta de TTY.
-    command: ["gateway", "run"]
+    command: ["sh", "-c", "python /opt/data/scripts/gh_auth.py; exec gateway run"]
     depends_on:
       - redis
       - risk-gateway
@@ -78,6 +78,7 @@ services:
       WEBHOOK_ENABLED: "true"
       WEBHOOK_PORT: "8646"
       GATEWAY_URL: "http://risk-gateway:8647"
+      GH_TOKEN: ${GH_TOKEN:-}
     # .env.agent = hermes/.env sem BETRADER_TOKEN/BETRADER_BASE_URL (invariante
     # F2: o agente não detém o token de trading). Supre GATEWAY_TOKEN,
     # WEBHOOK_SECRET, LLM keys e Telegram.
