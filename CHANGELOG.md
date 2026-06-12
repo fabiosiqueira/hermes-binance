@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.6.0] - 2026-06-12
+
+### Features
+- 9dbd1ab feat(binance): brief/proposal/mulham handoff 100% Redis (sem filesystem) + dual-write do brief
+- 71975a8 feat(binance): redis-first brief/proposal handoff + deterministic Mulham analyzer (W+S, CCT, token efficiency for Binance access via /hermes-validate)
+
+### Fixes
+- 1f0d467 fix(binance-project): brief pede candles-only (indicador on-demand do betrader pendura)
+- 5fa0cac fix(binance-project): brief busca candles+indicators via POST /api/market
+- 9faaeda fix(binance-project): redis do agente com nome único (evita colisão DNS com coolify-redis)
+- a2f5077 fix(binance-project): Brief tolera falha em endpoints betrader descartados (beholder/memory, automations/indexes)
+- 07829d5 fix(binance-project): gateway command usa `hermes gateway run` (engine dropou alias `gateway`)
+
 ## [v0.5.0] - 2026-06-11
 
 ### Features
