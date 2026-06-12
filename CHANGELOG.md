@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.6.1] - 2026-06-12
+
+### Fixes
+- 520b8b0 fix(binance-project): brief thin-client usa timeout 90s (não 5s default do httpx)
+
+### Other
+- aaf8281 docs(binance-project): relatório de validação de funcionalidades do HAWK + STATE
+
 ## [v0.6.0] - 2026-06-12
 
 ### Features
