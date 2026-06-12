@@ -382,6 +382,95 @@ def test_rollback_vira_errors_com_estado_persistido(
     assert redis_client.get("binance:strategist:financial_state") is not None
 
 
+# --- Concorrência (#6 Part B): servidor threaded + executes mutuamente exclusivos ---
+
+
+def test_start_gateway_usa_threading_http_server(monkeypatch, redis_client, obs):
+    """Requests concorrentes (cron + manual + webhook) não podem serializar no
+    servidor: o gateway deve subir um ThreadingHTTPServer com threads daemon."""
+    from http.server import ThreadingHTTPServer
+
+    from risk_gateway import start_gateway
+
+    _setup_env(monkeypatch)
+    # Fronteira de I/O dos servidores de métricas: não bindar portas reais no teste.
+    monkeypatch.setattr(obs, "start_servers", lambda port=9468: None)
+
+    server = start_gateway(0, redis_client=redis_client, observability=obs)
+    try:
+        assert isinstance(server, ThreadingHTTPServer)
+        assert server.daemon_threads is True
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+@respx.mock
+def test_executes_concorrentes_serializam_via_lock(
+    respx_mock, monkeypatch, redis_client, obs
+):
+    """Dois handle_execute concorrentes não interleiam: o segundo só inicia suas
+    calls betrader depois que o primeiro conclui (integridade do financial_state)."""
+    import threading
+
+    _setup_env(monkeypatch)
+    _mock_brief_endpoints(respx_mock)
+
+    a_blocked = threading.Event()
+    release_a = threading.Event()
+    b_entered = threading.Event()
+    users_calls = {"n": 0}
+    orders_calls = {"n": 0}
+
+    def users_side_effect(request):
+        # GET /api/users é a 1ª call betrader de cada execute (assert_testnet):
+        # a 2ª ocorrência marca que o execute B entrou na sua seção crítica.
+        users_calls["n"] += 1
+        if users_calls["n"] == 2:
+            b_entered.set()
+        return httpx.Response(200, json=_users_payload(is_testnet=True))
+
+    def orders_side_effect(request):
+        # 1ª call (entry do A) bloqueia segurando o execute A no meio da seção
+        # crítica; ímpar = entry FILLED, par = stop NEW.
+        orders_calls["n"] += 1
+        if orders_calls["n"] == 1:
+            a_blocked.set()
+            assert release_a.wait(5)
+        status = "FILLED" if orders_calls["n"] % 2 else "NEW"
+        return httpx.Response(200, json={"orderId": 100 + orders_calls["n"], "status": status})
+
+    respx_mock.get(f"{BASE_URL}/api/users").mock(side_effect=users_side_effect)
+    respx_mock.put(f"{BASE_URL}/api/futures/BTCUSDT").mock(
+        return_value=httpx.Response(200, json=[{"leverage": 3}])
+    )
+    respx_mock.post(f"{BASE_URL}/api/orders").mock(side_effect=orders_side_effect)
+
+    _run_brief(redis_client, obs)
+    results: list[dict] = []
+
+    def _executa():
+        results.append(_run_execute(redis_client, obs, _proposal_aprovada()))
+
+    thread_a = threading.Thread(target=_executa)
+    thread_a.start()
+    assert a_blocked.wait(5)  # A está no meio do execute, bloqueado no betrader
+
+    thread_b = threading.Thread(target=_executa)
+    thread_b.start()
+    try:
+        # Com o lock, B NÃO chega a nenhuma call betrader enquanto A não conclui.
+        assert not b_entered.wait(0.3)
+    finally:
+        release_a.set()  # solta A mesmo em falha (não pendura a suíte)
+    thread_a.join(10)
+    thread_b.join(10)
+
+    assert b_entered.is_set()  # B rodou após A soltar o lock
+    assert [r["executed"] for r in results] == [True, True]
+    assert [r["errors"] for r in results] == [[], []]
+
+
 # --- Auth: require_auth aceita o token correto e rejeita errado/ausente ---
 
 

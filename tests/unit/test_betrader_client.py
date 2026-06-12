@@ -619,6 +619,36 @@ def test_install_automations_retorna_ids() -> None:
     assert start_route.call_count == 2
 
 
+@respx.mock
+def test_install_automations_posta_payload_estruturado() -> None:
+    # Contrato real do betrader (#7): AutomationCondition é {eval, operator, variable}
+    # (campos obrigatórios no Prisma — `condition` string inteira é rejeitada), e a
+    # Automation exige `symbol` + `indexes` (sem indexes o brain nunca dispara).
+    post_route = respx.post(f"{BASE_URL}/api/automations").mock(
+        return_value=httpx.Response(200, json={"id": "auto-1"})
+    )
+    respx.post(url__regex=rf"{BASE_URL}/api/automations/.+/start").mock(
+        return_value=httpx.Response(200, json={"id": "auto-1", "isActive": True})
+    )
+    spec = AutomationSpec(
+        name="liq-proximity-sentinel",
+        condition="MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_u1'] < 2",
+        action={"type": "ORDER", "side": "SELL", "reduceOnly": True},
+    )
+    with _client() as client:
+        client.install_automations([spec])
+    posted = json.loads(post_route.calls.last.request.content)["newAutomation"]
+    assert posted["symbol"] == "BTCUSDT"
+    assert posted["indexes"] == ["BTCUSDT:LIQ_PROXIMITY_PCT_u1"]
+    assert posted["conditions"] == [
+        {
+            "eval": "MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_u1']",
+            "operator": "<",
+            "variable": "2",
+        }
+    ]
+
+
 WEBHOOK_URL = "https://hermes.example.test/webhook/betrader"
 WEBHOOK_SECRET = "whsec_0123456789abcdef0123456789abcdef"
 

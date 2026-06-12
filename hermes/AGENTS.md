@@ -96,7 +96,7 @@ Schema `StrategyProposal` (exemplo VÁLIDO — campos e tipos exatos de `scripts
   "automations": [
     {
       "name": "rsi-oversold-exit",
-      "condition": "MEMORY['BTCUSDT:RSI_14'] < 30",
+      "condition": "MEMORY['BTCUSDT:RSI_14_15m'].current < 30",
       "action": {"type": "ORDER", "side": "SELL", "reduceOnly": true}
     }
   ],
@@ -150,14 +150,16 @@ Incluo uma ou mais `AutomationSpec` no campo `StrategyProposal.automations` com 
 ```json
 {
   "name": "liq-proximity-sentinel",
-  "condition": "MEMORY['BTCUSDT:POSITION_LIQ_PRICE'] < 99000",
+  "condition": "MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_<userId>'] < 2",
   "action": {"type": "WEBHOOK"}
 }
 ```
 
-A `condition` segue o formato exato do Beholder e usa índices que o betrader publica no MEMORY, conforme o catálogo do brief:
-- `MEMORY['BTCUSDT:POSITION_LIQ_PRICE']` — preço de liquidação da posição (sentinela de proximidade de liq).
-- `MEMORY['BTCUSDT:RSI_14']` ou qualquer indicador do `catalog[]` — nível de preço/mark, RSI, etc.
+A `condition` segue o formato exato do Beholder: `MEMORY['<índice do catálogo>'](.path)* <op> <número literal>`. Regras:
+- **Use o nome EXATO do índice como aparece no `catalog[]` do brief** (inclui sufixos de intervalo e de usuário, ex.: `RSI_14_15m`, `LIQ_PROXIMITY_PCT_<userId>`). Nunca invente nome de índice.
+- **Memórias de indicador são objetos `{current, previous}`** — compare `MEMORY['BTCUSDT:RSI_14_15m'].current < 30`, nunca o objeto inteiro.
+- `MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_<userId>']` — distância percentual do mark até o preço de liquidação da posição, **recalculada a cada tick de mark price** (valor plano, sem `.current`). É o índice canônico para sentinela de proximidade de liq: `< 2` significa "mark a menos de 2% da liq". **Só existe com posição aberta** — conta flat → índice ausente do catálogo → sentinela de liq é prematura por construção (proponha breakout ou nada).
+- O lado direito é **sempre número literal**. Sem aritmética, sem outro `MEMORY[...]` — thresholds relativos vêm de índices derivados (como o de liq-proximity), não de expressões.
 
 Eventos típicos que justificam uma sentinela: stop prestes a ser atingido, posição perto de liquidação, rompimento de nível de preço relevante.
 

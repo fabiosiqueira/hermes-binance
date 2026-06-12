@@ -27,9 +27,9 @@ import hmac
 import json
 import os
 from collections.abc import Callable
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from threading import Thread
+from threading import Lock, Thread
 
 from pydantic import ValidationError
 
@@ -52,6 +52,11 @@ _DOGMAS_PATH = Path(__file__).parent.parent / "dogmas.yaml"
 _KEY_BRIEF_PREFIX = "binance:strategist:brief:"
 
 _DEFAULT_GATEWAY_PORT = 8647
+
+# Executes são mutuamente exclusivos (#6 Part B): o servidor threaded permite briefs
+# concorrentes, mas o trecho load→gate→betrader→persist do financial_state é uma
+# seção crítica read-modify-write — sem o lock, dois executes interleados perdem update.
+_EXECUTE_LOCK = Lock()
 
 
 def _brief_key(symbol: str) -> str:
@@ -151,80 +156,83 @@ def handle_execute(
         observability.record_error("brief_reload_error")
         return {"executed": False, "reason": "invalid_proposal", "detail": str(exc)}
 
-    state = FinancialState.load(redis_client)
-    maybe_trigger_drawdown_wake(
-        state,
-        dogmas.max_daily_drawdown_pct,
-        on_error=observability.record_error,
-    )
-
-    # (c) gate determinístico.
-    result = validate(proposal, dogmas, brief)
-    if not result.ok:
-        observability.record_decision(
-            proposal.model_dump(), gate_ok=False, reason=result.reason, redis=redis_client
+    # Seção crítica (#6 Part B): load→gate→betrader→persist sob lock — executes
+    # concorrentes não interleiam escrita no betrader nem no financial_state.
+    with _EXECUTE_LOCK:
+        state = FinancialState.load(redis_client)
+        maybe_trigger_drawdown_wake(
+            state,
+            dogmas.max_daily_drawdown_pct,
+            on_error=observability.record_error,
         )
+
+        # (c) gate determinístico.
+        result = validate(proposal, dogmas, brief)
+        if not result.ok:
+            observability.record_decision(
+                proposal.model_dump(), gate_ok=False, reason=result.reason, redis=redis_client
+            )
+            return {
+                "executed": False,
+                "reason": "gate_rejected",
+                "violations": result.violations,
+            }
+
+        # (d) aprovado → execução. teardown → entries → install_automations.
+        orders: list[dict] = []
+        automations: list[str] = []
+        errors: list[str] = []
+        client = BetraderClient.from_env(on_error=observability.record_error)
+        try:
+            if brief.mode == ExecutionMode.DRY_RUN:
+                client.assert_testnet()
+
+            if proposal.teardown:
+                try:
+                    client.teardown(proposal.teardown)
+                except BetraderError as exc:
+                    observability.record_error(exc.type)
+                    errors.append(exc.type)
+
+            ref_price = _ref_price(brief)
+            for entry in proposal.entries:
+                # Falha de uma entry NÃO aborta as automations, mas é coletada.
+                try:
+                    order = client.place_entry_with_stop(
+                        entry, brief.portfolio.equity, ref_price=ref_price
+                    )
+                    orders.append(order)
+                except BetraderError as exc:
+                    observability.record_error(exc.type)
+                    errors.append(exc.type)
+
+            if proposal.automations:
+                try:
+                    automations = client.install_automations(proposal.automations)
+                except BetraderError as exc:
+                    observability.record_error(exc.type)
+                    errors.append(exc.type)
+        except BetraderError as exc:
+            # assert_testnet falhou (ou outra falha fora do laço): aborta a escrita.
+            observability.record_error(exc.type)
+            errors.append(exc.type)
+        finally:
+            client.close()
+
+        # (e) observability: decisão + ciclo, e PERSISTE o estado ANTES de retornar.
+        observability.record_decision(
+            proposal.model_dump(), gate_ok=True, reason=None, redis=redis_client
+        )
+        observability.record_cycle()
+        state.persist(redis_client)
+
+        # (f) resumo do ciclo.
         return {
-            "executed": False,
-            "reason": "gate_rejected",
-            "violations": result.violations,
+            "executed": True,
+            "orders": orders,
+            "automations": automations,
+            "errors": errors,
         }
-
-    # (d) aprovado → execução. teardown → entries → install_automations.
-    orders: list[dict] = []
-    automations: list[str] = []
-    errors: list[str] = []
-    client = BetraderClient.from_env(on_error=observability.record_error)
-    try:
-        if brief.mode == ExecutionMode.DRY_RUN:
-            client.assert_testnet()
-
-        if proposal.teardown:
-            try:
-                client.teardown(proposal.teardown)
-            except BetraderError as exc:
-                observability.record_error(exc.type)
-                errors.append(exc.type)
-
-        ref_price = _ref_price(brief)
-        for entry in proposal.entries:
-            # Falha de uma entry NÃO aborta as automations, mas é coletada.
-            try:
-                order = client.place_entry_with_stop(
-                    entry, brief.portfolio.equity, ref_price=ref_price
-                )
-                orders.append(order)
-            except BetraderError as exc:
-                observability.record_error(exc.type)
-                errors.append(exc.type)
-
-        if proposal.automations:
-            try:
-                automations = client.install_automations(proposal.automations)
-            except BetraderError as exc:
-                observability.record_error(exc.type)
-                errors.append(exc.type)
-    except BetraderError as exc:
-        # assert_testnet falhou (ou outra falha fora do laço): aborta a escrita.
-        observability.record_error(exc.type)
-        errors.append(exc.type)
-    finally:
-        client.close()
-
-    # (e) observability: decisão + ciclo, e PERSISTE o estado ANTES de retornar.
-    observability.record_decision(
-        proposal.model_dump(), gate_ok=True, reason=None, redis=redis_client
-    )
-    observability.record_cycle()
-    state.persist(redis_client)
-
-    # (f) resumo do ciclo.
-    return {
-        "executed": True,
-        "orders": orders,
-        "automations": automations,
-        "errors": errors,
-    }
 
 
 def _execute_symbol(proposal: StrategyProposal) -> str:
@@ -273,7 +281,7 @@ def start_gateway(
     brief_mirror: object = None,
     observability: Observability = None,  # type: ignore[assignment]
     on_error: Callable[[str], None] | None = None,
-) -> None:
+) -> ThreadingHTTPServer:
     """Sobe o Risk Gateway: Observability (/metrics+/health) + handler /brief+/execute.
 
     Constrói Redis e Observability se não injetados (fronteiras de I/O). Restaura as
@@ -385,9 +393,13 @@ def start_gateway(
         def log_message(self, format: str, *args: object) -> None:  # noqa: A002
             pass  # silencia logs (nunca loga token/corpo)
 
-    server = HTTPServer(("0.0.0.0", port), _GatewayHandler)
+    # Threaded (#6 Part B): briefs/healths concorrentes não serializam atrás de um
+    # execute em voo; a exclusão mútua dos executes fica no _EXECUTE_LOCK.
+    server = ThreadingHTTPServer(("0.0.0.0", port), _GatewayHandler)
+    server.daemon_threads = True
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
+    return server
 
 
 if __name__ == "__main__":

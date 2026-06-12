@@ -29,6 +29,7 @@ from schemas import (
     Portfolio,
     Position,
     RiskState,
+    parse_automation_condition,
 )
 
 # Status de ordem que contam como "stop confirmado" (seção 2 do doc): a STOP_MARKET
@@ -510,8 +511,12 @@ class BetraderClient:
     def install_automations(self, automations: list[AutomationSpec]) -> list[str]:
         """Instala automations de gestão/saída no Beholder; retorna os ids criados.
 
-        POST /api/automations (+ start). condition/action repassados conforme schema.
-        Actions WEBHOOK recebem webhookUrl/webhookSecret do ambiente (sem mutar o spec).
+        POST /api/automations (+ start). A condition é decomposta no shape real do
+        betrader: conditions=[{eval, operator, variable}] (campos obrigatórios do
+        AutomationCondition) + symbol e indexes na Automation — sem indexes o brain
+        do Beholder nunca se inscreve nos updates de memória e a automation não
+        dispara. Actions WEBHOOK recebem webhookUrl/webhookSecret do ambiente
+        (sem mutar o spec).
         """
         ids: list[str] = []
         for spec in automations:
@@ -520,9 +525,18 @@ class BetraderClient:
                 if spec.action.get("type") == "WEBHOOK"
                 else spec.action
             )
+            parsed = parse_automation_condition(spec.condition)
             new_automation: dict = {
                 "name": spec.name,
-                "conditions": [{"condition": spec.condition}],
+                "symbol": parsed["symbol"],
+                "indexes": [parsed["index_key"]],
+                "conditions": [
+                    {
+                        "eval": parsed["eval"],
+                        "operator": parsed["operator"],
+                        "variable": parsed["variable"],
+                    }
+                ],
                 "actions": [action],
             }
             if spec.schedule:

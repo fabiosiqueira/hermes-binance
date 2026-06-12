@@ -169,10 +169,39 @@ class EntryOrder(BaseModel):
         return self
 
 
-# Formato de condition do Beholder: MEMORY['SYMBOL:INDICATOR_params'] <op> valor.
+# Formato de condition do Beholder: MEMORY['SYMBOL:INDICATOR_params'](.path)* <op> valor.
+# LHS aceita dot-path de propriedades (memórias de indicador são objetos
+# {current, previous} no Beholder); RHS é SEMPRE literal numérico — sem aritmética,
+# sem outro MEMORY: a condition vira corpo de Function() no Beholder e este regex é
+# a barreira anti-injeção do lado do estrategista (gate soberano).
 _AUTOMATION_CONDITION_RE = re.compile(
-    r"^MEMORY\['[A-Z0-9]+:[A-Za-z0-9_]+'\]\s*(>|<|>=|<=|===|!=)\s*-?[0-9.]+$"
+    r"^(MEMORY\['([A-Z0-9]+):([A-Za-z0-9_]+)'\](?:\.[A-Za-z_][A-Za-z0-9_]*)*)"
+    r"\s*(>=|<=|===|!=|>|<)\s*(-?[0-9.]+)$"
 )
+
+
+def parse_automation_condition(condition: str) -> dict:
+    """Decompõe a condition no shape do betrader (AutomationCondition + Automation).
+
+    Retorna {eval, operator, variable, symbol, index_key}: eval/operator/variable
+    são os campos do AutomationCondition; symbol e index_key (SYMBOL:INDICATOR,
+    sem dot-path) alimentam Automation.symbol e Automation.indexes — sem indexes
+    o brain do Beholder nunca dispara a automation.
+    """
+    match = _AUTOMATION_CONDITION_RE.match(condition)
+    if match is None:
+        raise ValueError(
+            "condition fora do formato Beholder: "
+            "MEMORY['SYMBOL:INDICATOR_params'] <op> valor"
+        )
+    lhs, symbol, indicator, operator, variable = match.groups()
+    return {
+        "eval": lhs,
+        "operator": operator,
+        "variable": variable,
+        "symbol": symbol,
+        "index_key": f"{symbol}:{indicator}",
+    }
 
 
 class AutomationSpec(BaseModel):

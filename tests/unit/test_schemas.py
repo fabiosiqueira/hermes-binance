@@ -185,6 +185,12 @@ def test_entry_order_leverage_menor_que_um_falha() -> None:
         "MEMORY['BTCUSDT:MACD_12_26_9'] <= -1.5",
         "MEMORY['BTCUSDT:CLOSE'] === 60000",
         "MEMORY['ETHUSDT:EMA_50'] != 3000",
+        # Dot-path no LHS (#7): memórias de indicador são objetos {current, previous}
+        # no Beholder; sem o acesso à propriedade a comparação nunca dispara.
+        "MEMORY['BTCUSDT:RSI_14_15m'].current > 70",
+        "MEMORY['BTCUSDT:MARK_PRICE'].current.markPrice > 60000",
+        # Índice derivado de liq-proximity (#7): valor plano, threshold relativo (%).
+        "MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_clw1abc23'] < 2",
     ],
 )
 def test_automation_condition_formato_valido(condition: str) -> None:
@@ -204,6 +210,9 @@ def test_automation_condition_formato_valido(condition: str) -> None:
         "MEMORY['BTCUSDT:RSI_14'] => 70",  # operador inválido
         "MEMORY['BTCUSDT:RSI_14'] > abc",  # valor não numérico
         "MEMORY[BTCUSDT:RSI_14] > 70",  # sem aspas
+        "MEMORY['BTCUSDT:RSI_14'].current() > 70",  # chamada de função no path
+        "MEMORY['BTCUSDT:RSI_14'] > 70 * 2",  # aritmética no RHS (gate soberano)
+        "MEMORY['BTCUSDT:RSI_14'] > MEMORY['BTCUSDT:EMA_50']",  # RHS indexado
     ],
 )
 def test_automation_condition_formato_invalido_falha(condition: str) -> None:
@@ -213,6 +222,40 @@ def test_automation_condition_formato_invalido_falha(condition: str) -> None:
             condition=condition,
             action={"type": "ORDER"},
         )
+
+
+# --- parse_automation_condition (#7): split eval/operator/variable p/ o betrader ---
+
+
+def test_parse_automation_condition_decompoe_partes() -> None:
+    from schemas import parse_automation_condition
+
+    parsed = parse_automation_condition("MEMORY['BTCUSDT:RSI_14_15m'].current > 70")
+    assert parsed == {
+        "eval": "MEMORY['BTCUSDT:RSI_14_15m'].current",
+        "operator": ">",
+        "variable": "70",
+        "symbol": "BTCUSDT",
+        "index_key": "BTCUSDT:RSI_14_15m",
+    }
+
+
+def test_parse_automation_condition_sem_dot_path() -> None:
+    from schemas import parse_automation_condition
+
+    parsed = parse_automation_condition("MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_u1'] < 2")
+    assert parsed["eval"] == "MEMORY['BTCUSDT:LIQ_PROXIMITY_PCT_u1']"
+    assert parsed["operator"] == "<"
+    assert parsed["variable"] == "2"
+    assert parsed["symbol"] == "BTCUSDT"
+    assert parsed["index_key"] == "BTCUSDT:LIQ_PROXIMITY_PCT_u1"
+
+
+def test_parse_automation_condition_invalida_levanta() -> None:
+    from schemas import parse_automation_condition
+
+    with pytest.raises(ValueError):
+        parse_automation_condition("rsi > 70")
 
 
 # --- StrategyProposal: reasoning obrigatório + defaults ---
