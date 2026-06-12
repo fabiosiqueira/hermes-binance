@@ -40,19 +40,15 @@ _STOP_CONFIRMED_STATUS = {"NEW", "FILLED", "PARTIALLY_FILLED"}
 # parâmetro do client; BTCUSDT perp (M1) usa 3 casas.
 _DEFAULT_QUANTITY_PRECISION = 3
 
-# Mercado via POST /api/market (BeTraderRequest): candles + indicadores correntes.
-# O GET público de /api/market não expõe candles e só devolve indicadores já em
-# cache; o POST lê o CANDLE_LIST do monitor e computa os indicadores pedidos.
-# `_MARKET_INDICATORS`: nome→params (valores textbook — o catálogo /api/indicators
-# só expõe NOMES de params, não defaults). `_MARKET_CANDLES`: janela para a análise
-# Mulham (swings/ranges/CCT precisam de história; betrader devolve no máx. o disponível).
-_MARKET_INDICATORS: dict[str, list[str]] = {
-    "RSI": ["14"],
-    "MACD": ["12", "26", "9"],
-    "EMA": ["20"],
-    "ATR": ["14"],
-    "BB": ["20", "2"],
-}
+# Mercado via POST /api/market (BeTraderRequest): candles do CANDLE_LIST do monitor.
+# O GET público não expõe candles e só devolve indicador já em cache; o POST lê os
+# candles e computa indicadores pedidos. `_MARKET_INDICATORS` fica VAZIO de propósito:
+# pedir indicador não-cacheado dispara o load on-demand do betrader (registra no
+# monitor, `wait(5)` e recursa) que NÃO converge — a request pendura >90s e travaria
+# o ciclo. O Mulham é candle-based (swings/ranges/CCT sobre OHLC), não depende desses
+# indicadores; brief.market.indicators fica {} até o betrader corrigir o on-demand.
+# `_MARKET_CANDLES`: janela para a análise Mulham (betrader devolve no máx. o disponível).
+_MARKET_INDICATORS: dict[str, list[str]] = {}
 _MARKET_CANDLES = 200
 
 
