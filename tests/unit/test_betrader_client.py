@@ -361,6 +361,33 @@ def test_fetch_brief_repassa_risk_state_do_caller(respx_mock: respx.Router) -> N
     assert brief.risk_state == rs
 
 
+@respx.mock
+def test_fetch_brief_tolera_falha_em_endpoints_descartados(
+    respx_mock: respx.Router,
+) -> None:
+    # /api/beholder/memory e /api/automations/indexes alimentam o reasoning do LLM
+    # mas NÃO compõem o Brief tipado (resultado descartado). Uma falha 5xx neles não
+    # deve quebrar o Brief — os endpoints essenciais respondem normalmente. A
+    # observability ainda é notificada (não engolida em silêncio).
+    _mock_brief_endpoints(respx_mock)
+    respx_mock.get(f"{BASE_URL}/api/beholder/memory").mock(
+        return_value=httpx.Response(500, text="Value is not JSON serializable")
+    )
+    respx_mock.get(f"{BASE_URL}/api/automations/indexes").mock(
+        return_value=httpx.Response(500, text="boom")
+    )
+    errors: list[str] = []
+    with _client(on_error=errors.append) as client:
+        brief = client.fetch_brief(
+            "BTCUSDT", "1h", mode=ExecutionMode.DRY_RUN, risk_state=_risk_state()
+        )
+    # Brief montado a partir dos endpoints essenciais, apesar do 5xx nos descartados.
+    assert brief.market.symbol == "BTCUSDT"
+    assert brief.portfolio.equity == 10000.0
+    # A falha foi notificada à observability (correlação por tipo), não engolida.
+    assert "betrader_http_5xx" in errors
+
+
 # --- place_entry_with_stop: caminho crítico ---
 
 

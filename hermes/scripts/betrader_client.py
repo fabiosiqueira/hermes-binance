@@ -141,6 +141,18 @@ class BetraderClient:
     def _get(self, path: str, **kwargs) -> httpx.Response:
         return self._request("GET", path, **kwargs)
 
+    def _get_optional(self, path: str, **kwargs) -> httpx.Response | None:
+        """GET tolerante: falha do betrader retorna None em vez de levantar.
+
+        Para chamadas cujo resultado alimenta o reasoning do LLM mas NÃO compõe o
+        Brief tipado — o Brief não deve quebrar por dado que ele descarta. on_error
+        já é notificado por _request antes da exceção (a falha não é engolida).
+        """
+        try:
+            return self._get(path, **kwargs)
+        except BetraderError:
+            return None
+
     def _post(self, path: str, **kwargs) -> httpx.Response:
         return self._request("POST", path, **kwargs)
 
@@ -285,8 +297,11 @@ class BetraderClient:
         )
 
         # Índices correntes do Beholder (alimentam o reasoning do LLM; não tipados aqui).
-        self._get("/api/beholder/memory")
-        self._get("/api/automations/indexes", params={"symbol": symbol})
+        # Não-essenciais ao Brief: tolerados se o betrader falhar (observability já
+        # notificada). O Brief não deve quebrar por dado que ele descarta — ex.
+        # /api/beholder/memory 500 "Value is not JSON serializable" (betrader-hydra#6).
+        self._get_optional("/api/beholder/memory")
+        self._get_optional("/api/automations/indexes", params={"symbol": symbol})
 
         # Ativos: automations + ordens vigentes.
         automations = self._get("/api/automations", params={"mode": "all"}).json()
