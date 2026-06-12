@@ -31,9 +31,26 @@ _BRIEF_KEY_PREFIX = "binance:strategist:brief:"
 _AUTH_HEADER = "Authorization"
 _BEARER_PREFIX = "Bearer "
 
+# Timeout do client HTTP do gateway. O brief é betrader-bound e leva 15–44s; o
+# default do httpx (5s) estoura sempre e mascara o brief como gateway_error apesar
+# de o gateway já ter gravado o Redis (#6). 90s cobre a cauda com folga; ajustável
+# via GATEWAY_HTTP_TIMEOUT_SECONDS.
+_DEFAULT_HTTP_TIMEOUT_SECONDS = 90.0
+
 
 def _gateway_headers(token: str) -> dict:
     return {_AUTH_HEADER: f"{_BEARER_PREFIX}{token}"}
+
+
+def _build_http_client() -> httpx.Client:
+    """Client HTTP do gateway com timeout generoso (não o 5s default do httpx).
+
+    Lê GATEWAY_HTTP_TIMEOUT_SECONDS do env (default _DEFAULT_HTTP_TIMEOUT_SECONDS).
+    """
+    timeout = float(
+        os.environ.get("GATEWAY_HTTP_TIMEOUT_SECONDS", _DEFAULT_HTTP_TIMEOUT_SECONDS)
+    )
+    return httpx.Client(timeout=timeout)
 
 
 def _emit(payload: dict) -> int:
@@ -198,7 +215,7 @@ def main(
 
     args = parser.parse_args(argv)
 
-    client = http_client if http_client is not None else httpx.Client()
+    client = http_client if http_client is not None else _build_http_client()
 
     if args.command == "brief":
         return _cmd_brief(http_client=client)
