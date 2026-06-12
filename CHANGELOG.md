@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.6.2] - 2026-06-12
+
+### Fixes
+- 56f4791 fix(binance-project): gateway threaded + lock de execute (#6 Part B) e contrato real de automations (#7)
+
+### Other
+- 8fcf47e chore(binance-project): STATE — rodada #6 Part A fechada (/done deploy prd v0.6.1)
+
 ## [v0.6.1] - 2026-06-12
 
 ### Fixes
