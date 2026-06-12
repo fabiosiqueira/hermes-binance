@@ -72,7 +72,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: vps
-    command: ["sh", "-c", "python /opt/data/scripts/gh_auth.py; exec gateway run"]
+    command: ["sh", "-c", "python /opt/data/scripts/gh_auth.py; exec hermes gateway run"]
     restart: unless-stopped
     depends_on:
       redis:

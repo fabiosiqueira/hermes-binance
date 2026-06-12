@@ -62,7 +62,7 @@ services:
     # Sobe o gateway de mensageria (telegram) em foreground como CMD do container
     # (Architecture B: main-wrapper exec `hermes gateway run`). Sem isso o engine
     # cai no CLI interativo e encerra por falta de TTY.
-    command: ["sh", "-c", "python /opt/data/scripts/gh_auth.py; exec gateway run"]
+    command: ["sh", "-c", "python /opt/data/scripts/gh_auth.py; exec hermes gateway run"]
     depends_on:
       - redis
       - risk-gateway
