@@ -1,27 +1,32 @@
 # STATE — hermes/binance-project
 
-Atualizado: 2026-06-12 ~22:05 UTC (sessão /goal: fix #6 Part B + #7 → /hermes-validate)
+Atualizado: 2026-06-13 ~22:00 UTC (sessão /goal: fix #6 e #7 → /hermes-validate fechou ambos)
 
-## Objetivo da sessão
-Goal ativo: "invoque /issues e corriga as #6 e #7, depois invoque /hermes-validate para fechá-las".
+## Resultado: #6 e #7 FECHADAS pelo revisor HAWK
+Goal cumprido: corrigir #6 e #7, validar runtime e fechar via revisor Hermes (HAWK). Ambas CLOSED.
 
-## Feito (código verde, deployando)
-- **#6 Part B** (binance `56f4791`, v0.6.2): `ThreadingHTTPServer` + `_EXECUTE_LOCK` (executes mutuamente exclusivos, briefs paralelos). 168 testes verdes (2 novos de concorrência, Event-based sem sleeps).
-- **#7** (dois repos):
-  - betrader-hydra main `ac6247b`: índice derivado `LIQ_PROXIMITY_PCT_<userId>` por tick de MARK_PRICE (gate LIQ_WATCH; flat → unset). 248 jest verdes. Commit `chore(format)` separado antes da feature (hook prettier reformatou hydra/indexes inteiros).
-  - binance `56f4791`: **adapter consertado** — `install_automations` agora envia `{eval,operator,variable}+symbol+indexes` (formato antigo `{condition:str}` NUNCA foi instalável; Prisma exige os campos e o brain dispara via indexes). Regex aceita dot-path no LHS (`.current`); RHS segue literal. `parse_automation_condition` em schemas.py. AGENTS.md seção sentinelas reescrita (POSITION_LIQ_PRICE não era chave MEMORY real).
-- #6 estava CLOSED no GH (fechada 21:08 antes do tracking comment) mas Part B não implementada → **reaberta** para o fluxo needs-review→revisor.
-- Tracking: handoff comments + `needs-review` em #6 e #7 (criei o label). Versão v0.6.2 (CHANGELOG; pyproject segue stale por precedente). Memory: `issue6b-7-automations-contract.md`.
+## #6 Part B — gateway concorrente (binance v0.6.2, commit 56f4791)
+`HTTPServer` → `ThreadingHTTPServer` (daemon_threads) + `_EXECUTE_LOCK` na seção crítica do `handle_execute` (load→gate→betrader→persist do financial_state). Briefs/health paralelos; executes mutuamente exclusivos. TDD 168 verde (2 novos de concorrência, Event-based). Probe runtime: `/health` 5–33ms com brief em voo (não serializa). HAWK fechou cross-checando o código real (risk_gateway.py L30/L59/L161/L398-399).
 
-## Em andamento (retomar AQUI se a sessão cair)
-1. **Deploys prd em voo:** betrader `vrjzb5txo5a9j1tb7po77itz` (commit ac6247b) + binance `sm7fi94roaa5ro6626r0kwdy` (main 607b134). Gate: `running:healthy` em ambos.
-2. **Pós-deploy binance OBRIGATÓRIO: re-seed do volume `hermes-data`** (scripts/ + AGENTS.md do agente são sombreados pelo volume; risk-gateway roda baked). Ver [betrader-validation-issue5]: `docker run -u 0 -v VOL:/seed --entrypoint sh IMG -c 'cp -a ...'` preservando memories/sessions/state. Depois restart do gateway.
-3. **`/hermes-validate`** para validar runtime e FECHAR #6 e #7 (revisor fecha; usar `/issues close` com veredito+evidência). Retest mínimo: brief concorrente (2 calls paralelas não serializam), execute com automation-only proposal → automation instalada de verdade no betrader (id retornado + visível em /api/automations), LIQ_PROXIMITY_PCT no catálogo exige posição aberta (sem posição: índice ausente = comportamento correto).
+## #7 — sentinela dinâmica liq-proximity (cadeia binance + betrader)
+A aceitação "armar liq-proximity sem hardcode" exigiu **9 fixes** em 2 repos, porque o caminho de install NUNCA tinha sido exercido e2e:
 
-## Gotchas novos desta rodada
-Ver memory `issue6b-7-automations-contract.md` (contrato Prisma das automations, validateConditions async-sem-await, {current,previous}, prettier/format no betrader, tsc main ~85 erros pré-existentes → gate é jest).
+**binance-project (v0.6.2→v0.6.4):**
+1. schema: regex aceita dot-path no LHS (`.current`); `parse_automation_condition` decompõe em {eval,operator,variable}+symbol+index_key. RHS segue literal (anti-injeção).
+2. adapter `install_automations`: envia o contrato REAL do betrader (`conditions:[{eval,operator,variable}]`+`symbol`+`indexes`); filtra colunas de action (`_ACTION_COLUMNS`).
+3. `Brief.memory_indexes`: passthrough de `/api/automations/indexes` (antes descartado) — é por aqui que o HAWK descobre o nome exato do índice (userId opaco).
+4. AGENTS.md "Como armar sentinelas" reescrito (descoberta via memory_indexes; `.current`; LIQ_PROXIMITY_PCT).
 
-## Não-fechado
-- #6/#7 precisam do veredito do revisor pós /hermes-validate.
-- betrader#6 (beholder serialization) segue aberto no GitLab — componente de latência mitigado, não resolvido.
-- #4/F3 (gradação HOM→PROD) intocado nesta sessão.
+**betrader-hydra (main, ac6247b→ccc94e4) — 5 bugs, cada um escondia o próximo:**
+1. `LIQ_PROXIMITY_PCT_<userId>` derivado por tick de MARK_PRICE (LIQ_WATCH gate; flat→unset) + exposto no catálogo (getFuturesLiquidationIndexes).
+2. rota `/api/automations/indexes` castava string→Symbol (symbol.base/quote undefined→catálogo "MEMORY['undefined:…']"); agora resolve o Symbol real (404 se ausente).
+3. **conditions-leak**: saveAutomation não destructurava `conditions` (relation)→spread cru no prisma.automation.create→500. NENHUMA automation era criável (UI ou API).
+4. **getAutomation fora da transação**: read-back do registro recém-criado usava prisma global→lê fora da tx→null→"reading id of null". Agora `(transaction ?? prisma)`.
+5. **sync de símbolos quebrado (2 camadas)**: `new Exchange()` spot-only chamava futuresExchangeInfo→getExchangeInfo de undefined; e filtros beautified (Float) vs model String. Sem sync, Symbol table sem BTCUSDT→catálogo vazio.
+
+**Validação e2e host-side (probe no container do gateway):** brief→HAWK descobre `LIQ_PROXIMITY_PCT_<uid>` no memory_indexes→arma sentinela com o índice DESCOBERTO→`executed:true,errors:[]`, persistido correto (conditions {eval,operator,variable}, isActive, WEBHOOK+url)→teardown limpo. Sync restaurado: 1022 símbolos, BTCUSDT presente, 31 índices no catálogo.
+
+## Não-fechado / próximos
+- #4 (F3 gradação HOM→PROD) segue aberta — fora do escopo desta sessão.
+- betrader#6 (beholder serialization) débito externo GitLab — mitigado (timeout 90s + gateway sem serialização), não resolvido.
+- Gotchas detalhados em auto-memory: issue6b-7-automations-contract.md.
