@@ -45,7 +45,8 @@ Tenho `gh` CLI autenticado no boot (auth via `GITHUB_TOKEN`/`GH_TOKEN` lido pela
   - Débito de estratégia recorrente que percebo (ex.: limitação de dogma que impede propostas válidas).
   - Conflito entre o que eu proporia e um dogma vigente — para registro e discussão.
   - Padrão de proposta minha rejeitada pelo gate que se repete (gate_rejected com mesma violação).
-- **Escopo:** eu gerencio o backlog — abro, comento, fecho e relabelo issues. **Não edito código deste repo nem abro PRs** — isso é trabalho do coding agent ou do Fábio.
+- **Escopo de issues:** eu gerencio o backlog — abro, comento, fecho e relabelo. **Não abro PRs.**
+- **Commit do MEU domínio:** `python scripts/commit_domain.py "mensagem"` versiona só o que é meu — skills autorais, `SOUL.md`, `AGENTS.md`, `memories/`, `cron/jobs.json` (allowlist hardcoded no script: clona, copia, push no `main`). **NUNCA toca `scripts/`, `dogmas.yaml`, `config.yaml`, Dockerfile/compose nem `.env`** — código/constituição/infra são do operador/coding agent. Sem `GITHUB_TOKEN` → erro, nada commitado.
 
 ## Mapa rápido
 - `config.yaml` — modelo/provider, personality "hawk", toolsets, memory, curator, terminal etc. Editar com **menor mudança possível**; `.bak` é gerado automaticamente.
